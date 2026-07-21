@@ -99,7 +99,6 @@
     <script>
         // --- การตั้งค่า (Configuration) ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJDI5Y6c-d1HAb0S5gHxqreOnZUDC7prIQZ176VO6KJY2iviGpLVhCTI4avv_uKHqP/exec";
-        const GEMINI_API_KEY = "AQ.Ab8RN6IuDCIiQs6TP4jpVxlsxUAcFF36E2Ki89plF6YtUIcGPQ";
         
         let boxImageBase64 = "";
         let productImageBase64 = "";
@@ -198,23 +197,27 @@
         document.getElementById('uploadProductBtn').addEventListener('change', (e) => handleFileUpload(e, 'productPreview', 'product'));
 
         // --- ฟังก์ชัน Gemini API ---
-       async function callGeminiVision(base64Image, prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        async function callGeminiVision(base64Image, prompt) {
+            // ส่งรูปภาพไปวิเคราะห์ที่หลังบ้านแทน
             const payload = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                    ]
-                }]
+                action: "analyze",
+                imageBase64: base64Image,
+                prompt: prompt
             };
 
-            const response = await fetch(url, {
+            const response = await fetch(WEB_APP_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
+            
+            if (data.status === "error") {
+                throw new Error(data.message);
+            }
+            
+            return data.text;
+        }
             
             // เช็คว่า Google ส่ง Error กลับมาหรือไม่
             if (!response.ok || data.error) {
@@ -289,6 +292,11 @@
             status.innerText = "";
 
             const payload = {
+                action: "submit", // เพิ่มบรรทัดนี้เข้ามา!
+                platform: document.getElementById('platform').value,
+                tracking: document.getElementById('tracking').value,
+                orderId: document.getElementById('orderId').value,
+                //... (ส่วนอื่นคงไว้เหมือนเดิม)
                 platform: document.getElementById('platform').value,
                 tracking: document.getElementById('tracking').value,
                 orderId: document.getElementById('orderId').value,
@@ -298,6 +306,7 @@
                 boxImageBase64: boxImageBase64,
                 productImageBase64: productImageBase64
             };
+        
 
             try {
                 const response = await fetch(WEB_APP_URL, {
