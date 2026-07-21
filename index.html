@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรับคืนสินค้า</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; max-width: 600px; margin: auto; }
+        h2 { text-align: center; color: #333; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        video { width: 100%; border-radius: 8px; background: #000; display: none; }
+        canvas { display: none; }
+        img { width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+        label { font-weight: bold; margin-top: 10px; display: block; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 15px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; color: white; }
+        .btn-camera { background-color: #007bff; }
+        .btn-capture { background-color: #28a745; display: none; }
+        .btn-submit { background-color: #ff9800; font-weight: bold; }
+        .status { text-align: center; margin-top: 10px; font-weight: bold; color: #d32f2f; }
+    </style>
+</head>
+<body>
+
+    <h2>📦 ระบบรับสินค้าคืน/ตีกลับ</h2>
+
+    <!-- ส่วนที่ 1: ถ่ายรูปหน้ากล่อง -->
+    <div class="card">
+        <h3>1. ถ่ายรูปใบปะหน้ากล่อง</h3>
+        <button class="btn-camera" id="startBoxCam">เปิดกล้อง</button>
+        <video id="boxVideo" autoplay playsinline></video>
+        <button class="btn-capture" id="captureBoxBtn">📸 ถ่ายรูปและดึงข้อมูลด้วย AI</button>
+        <img id="boxPreview" alt="Box Preview">
+        <p class="status" id="boxStatus"></p>
+
+        <label>แพลตฟอร์ม:</label>
+        <select id="platform">
+            <option value="">-- เลือกแพลตฟอร์ม --</option>
+            <option value="Shopee">Shopee</option>
+            <option value="Lazada">Lazada</option>
+            <option value="TikTok">TikTok</option>
+        </select>
+
+        <label>เลขพัสดุรับคืน (Tracking):</label>
+        <input type="text" id="tracking" placeholder="AI จะเติมให้อัตโนมัติ">
+
+        <label>หมายเลขคำสั่งซื้อ (Order ID):</label>
+        <input type="text" id="orderId" placeholder="AI จะเติมให้อัตโนมัติ">
+    </div>
+
+    <!-- ส่วนที่ 2: ถ่ายรูปสินค้า -->
+    <div class="card">
+        <h3>2. ถ่ายรูปสินค้าด้านใน</h3>
+        <button class="btn-camera" id="startProductCam">เปิดกล้อง</button>
+        <video id="productVideo" autoplay playsinline></video>
+        <button class="btn-capture" id="captureProductBtn">📸 ถ่ายรูปและประเมินสภาพด้วย AI</button>
+        <img id="productPreview" alt="Product Preview">
+        <p class="status" id="productStatus"></p>
+
+        <label>ผลประเมินสภาพจาก AI:</label>
+        <textarea id="aiCondition" rows="2" readonly placeholder="AI จะช่วยประเมินสภาพเบื้องต้น"></textarea>
+
+        <label>สถานะสินค้าขั้นสุดท้าย (คุณยืนยัน):</label>
+        <select id="finalCondition">
+            <option value="สมบูรณ์ พร้อมขายต่อ">สมบูรณ์ พร้อมขายต่อ</option>
+            <option value="มีตำหนิ/แพ็กเกจพัง">มีตำหนิ/แพ็กเกจพัง</option>
+            <option value="สินค้าไม่ตรง/สูญหาย">สินค้าไม่ตรง/สูญหาย</option>
+        </select>
+
+        <label>หมายเหตุเพิ่มเติม:</label>
+        <textarea id="notes" rows="2" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
+    </div>
+
+    <!-- ปุ่มส่งข้อมูล -->
+    <button class="btn-submit" id="submitBtn">💾 บันทึกข้อมูลลงระบบ</button>
+    <p class="status" id="submitStatus"></p>
+
+    <!-- Canvas สำหรับแปลงภาพ -->
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // --- การตั้งค่า (Configuration) ---
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJDI5Y6c-d1HAb0S5gHxqreOnZUDC7prIQZ176VO6KJY2iviGpLVhCTI4avv_uKHqP/exec";
+        const GEMINI_API_KEY = "AQ.Ab8RN6JOiPVKvUnYUewD0DA5aEQZznx1oNXFj2ELB-u1wvJMdQ";
+        
+        let boxImageBase64 = "";
+        let productImageBase64 = "";
+        let currentStream = null;
+
+        // --- ฟังก์ชันกล้อง ---
+        async function startCamera(videoElementId, captureBtnId, startBtnId) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                document.getElementById(videoElementId).srcObject = stream;
+                document.getElementById(videoElementId).style.display = 'block';
+                document.getElementById(captureBtnId).style.display = 'block';
+                document.getElementById(startBtnId).style.display = 'none';
+                currentStream = stream;
+            } catch (err) {
+                alert("ไม่สามารถเปิดกล้องได้: " + err);
+            }
+        }
+
+        function captureImage(videoElementId, previewElementId) {
+            const video = document.getElementById(videoElementId);
+            const canvas = document.getElementById('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const base64Full = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById(previewElementId).src = base64Full;
+            document.getElementById(previewElementId).style.display = 'block';
+            
+            video.style.display = 'none';
+            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+            
+            return base64Full.split(',')[1]; // คืนค่าเฉพาะ data
+        }
+
+        // --- เหตุการณ์ปุ่มกล้องกล่อง ---
+        document.getElementById('startBoxCam').addEventListener('click', () => startCamera('boxVideo', 'captureBoxBtn', 'startBoxCam'));
+        
+        document.getElementById('captureBoxBtn').addEventListener('click', async () => {
+            boxImageBase64 = captureImage('boxVideo', 'boxPreview');
+            document.getElementById('captureBoxBtn').style.display = 'none';
+            document.getElementById('startBoxCam').style.display = 'block';
+            document.getElementById('startBoxCam').innerText = 'ถ่ายใหม่';
+            
+            document.getElementById('boxStatus').innerText = "⏳ AI กำลังอ่านใบปะหน้า...";
+            await analyzeLabel(boxImageBase64);
+        });
+
+        // --- เหตุการณ์ปุ่มกล้องสินค้า ---
+        document.getElementById('startProductCam').addEventListener('click', () => startCamera('productVideo', 'captureProductBtn', 'startProductCam'));
+        
+        document.getElementById('captureProductBtn').addEventListener('click', async () => {
+            productImageBase64 = captureImage('productVideo', 'productPreview');
+            document.getElementById('captureProductBtn').style.display = 'none';
+            document.getElementById('startProductCam').style.display = 'block';
+            document.getElementById('startProductCam').innerText = 'ถ่ายใหม่';
+            
+            document.getElementById('productStatus').innerText = "⏳ AI กำลังประเมินสภาพ...";
+            await analyzeCondition(productImageBase64);
+        });
+
+        // --- ฟังก์ชัน Gemini API ---
+        async function callGeminiVision(base64Image, prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const payload = {
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                    ]
+                }]
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        async function analyzeLabel(base64Image) {
+            try {
+                const prompt = "Extract the following from this shipping label: 1) Return Tracking Number, 2) Order ID, 3) Platform (guess between Shopee, Lazada, TikTok based on logo or format). Return ONLY a valid JSON object with keys: 'tracking', 'orderId', 'platform'. Do not include markdown or other text.";
+                let resultText = await callGeminiVision(base64Image, prompt);
+                resultText = resultText.replace(/```json/g, '').replace(/```/g, ''); // Clean markdown
+                const data = JSON.parse(resultText);
+                
+                if(data.tracking) document.getElementById('tracking').value = data.tracking;
+                if(data.orderId) document.getElementById('orderId').value = data.orderId;
+                if(data.platform) {
+                    const select = document.getElementById('platform');
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value.toLowerCase() === data.platform.toLowerCase()) {
+                            select.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                document.getElementById('boxStatus').innerText = "✅ AI ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้อง";
+                document.getElementById('boxStatus').style.color = "green";
+            } catch (error) {
+                document.getElementById('boxStatus').innerText = "❌ AI อ่านไม่สำเร็จ กรุณากรอกข้อมูลเอง";
+            }
+        }
+
+        async function analyzeCondition(base64Image) {
+            try {
+                const prompt = "Analyze this product image. Briefly describe its physical condition in Thai (e.g., กล่องบุบ, สินค้าสมบูรณ์, มีรอยแกะ). Keep it under 2 sentences.";
+                const resultText = await callGeminiVision(base64Image, prompt);
+                document.getElementById('aiCondition').value = resultText.trim();
+                document.getElementById('productStatus').innerText = "✅ AI ประเมินสำเร็จ!";
+                document.getElementById('productStatus').style.color = "green";
+            } catch (error) {
+                document.getElementById('productStatus').innerText = "❌ AI ไม่สามารถประเมินได้";
+            }
+        }
+
+        // --- ฟังก์ชันบันทึกข้อมูล ---
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('submitStatus');
+            
+            if(!boxImageBase64 || !productImageBase64) {
+                alert("กรุณาถ่ายรูปทั้งกล่องและสินค้าด้านในให้ครบถ้วน");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "กำลังบันทึกข้อมูล...";
+            status.innerText = "";
+
+            const payload = {
+                platform: document.getElementById('platform').value,
+                tracking: document.getElementById('tracking').value,
+                orderId: document.getElementById('orderId').value,
+                aiCondition: document.getElementById('aiCondition').value,
+                finalCondition: document.getElementById('finalCondition').value,
+                notes: document.getElementById('notes').value,
+                boxImageBase64: boxImageBase64,
+                productImageBase64: productImageBase64
+            };
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if(result.status === "success") {
+                    status.style.color = "green";
+                    status.innerText = "🎉 บันทึกข้อมูลลง Google Sheet เรียบร้อยแล้ว!";
+                    // Reset form
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    status.innerText = "❌ เกิดข้อผิดพลาด: " + result.message;
+                    btn.disabled = false;
+                    btn.innerText = "💾 บันทึกข้อมูลลงระบบ";
+                }
+            } catch (error) {
+                status.innerText = "❌ ไม่สามารถส่งข้อมูลได้: " + error.message;
+                btn.disabled = false;
+                btn.innerText = "💾 บันทึกข้อมูลลงระบบ";
+            }
+        });
+    </script>
+</body>
+</html>
