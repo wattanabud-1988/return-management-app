@@ -15,13 +15,11 @@
         input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         button, .btn-upload-label { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; color: white; display: inline-block; text-align: center; box-sizing: border-box; }
         
-        /* สไตล์ปุ่มต่างๆ */
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn-camera { background-color: #007bff; flex: 1; margin-top: 0; }
         .btn-upload-label { background-color: #6c757d; flex: 1; margin-top: 0; }
         .btn-capture { background-color: #28a745; display: none; margin-top: 10px; }
         .btn-submit { background-color: #ff9800; font-weight: bold; margin-top: 20px; }
-        
         .status { text-align: center; margin-top: 10px; font-weight: bold; color: #d32f2f; }
         input[type="file"] { display: none; }
     </style>
@@ -89,15 +87,12 @@
         <textarea id="notes" rows="2" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
     </div>
 
-    <!-- ปุ่มส่งข้อมูล -->
     <button class="btn-submit" id="submitBtn">💾 บันทึกข้อมูลลงระบบ</button>
     <p class="status" id="submitStatus"></p>
-
-    <!-- Canvas สำหรับแปลงภาพ -->
     <canvas id="canvas"></canvas>
 
     <script>
-        // --- การตั้งค่า (Configuration) ---
+        // --- นำ WEB APP URL มาใส่ตรงนี้ ---
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJDI5Y6c-d1HAb0S5gHxqreOnZUDC7prIQZ176VO6KJY2iviGpLVhCTI4avv_uKHqP/exec";
         
         let boxImageBase64 = "";
@@ -110,11 +105,11 @@
                 currentStream.getTracks().forEach(track => track.stop());
             }
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } });
                 document.getElementById(videoElementId).srcObject = stream;
                 document.getElementById(videoElementId).style.display = 'block';
                 document.getElementById(captureBtnId).style.display = 'block';
-                document.getElementById(previewId).style.display = 'none'; // ซ่อนรูปพรีวิวเดิมถ้าเปิดกล้องใหม่
+                document.getElementById(previewId).style.display = 'none';
                 currentStream = stream;
             } catch (err) {
                 alert("ไม่สามารถเปิดกล้องได้: " + err);
@@ -127,45 +122,37 @@
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
-            
             const base64Full = canvas.toDataURL('image/jpeg', 0.8);
             document.getElementById(previewElementId).src = base64Full;
             document.getElementById(previewElementId).style.display = 'block';
-            
             video.style.display = 'none';
             if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-            
             return base64Full.split(',')[1];
         }
 
-        // --- ฟังก์ชันอัปโหลดรูปภาพ ---
         function handleFileUpload(event, previewElementId, type) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const base64Full = e.target.result;
                 document.getElementById(previewElementId).src = base64Full;
                 document.getElementById(previewElementId).style.display = 'block';
-                
-                // ปิดกล้องถ้าเปิดค้างไว้
                 if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-                
                 const base64Data = base64Full.split(',')[1];
                 
                 if (type === 'box') {
                     boxImageBase64 = base64Data;
                     document.getElementById('boxVideo').style.display = 'none';
                     document.getElementById('captureBoxBtn').style.display = 'none';
-                    document.getElementById('boxStatus').innerText = "⏳ AI กำลังอ่านใบปะหน้า...";
+                    document.getElementById('boxStatus').innerText = "⏳ ระบบหลังบ้านกำลังอ่านข้อมูล...";
                     document.getElementById('boxStatus').style.color = "#d32f2f";
                     await analyzeLabel(boxImageBase64);
                 } else if (type === 'product') {
                     productImageBase64 = base64Data;
                     document.getElementById('productVideo').style.display = 'none';
                     document.getElementById('captureProductBtn').style.display = 'none';
-                    document.getElementById('productStatus').innerText = "⏳ AI กำลังประเมินสภาพ...";
+                    document.getElementById('productStatus').innerText = "⏳ ระบบหลังบ้านกำลังประเมิน...";
                     document.getElementById('productStatus').style.color = "#d32f2f";
                     await analyzeCondition(productImageBase64);
                 }
@@ -173,78 +160,54 @@
             reader.readAsDataURL(file);
         }
 
-        // --- ตั้งค่า Event ให้ปุ่มต่างๆ ---
-        // กล่องพัสดุ
+        // --- ตั้งค่าปุ่มกดต่างๆ ---
         document.getElementById('startBoxCam').addEventListener('click', () => startCamera('boxVideo', 'captureBoxBtn', 'boxPreview'));
         document.getElementById('captureBoxBtn').addEventListener('click', async () => {
             boxImageBase64 = captureImage('boxVideo', 'boxPreview');
             document.getElementById('captureBoxBtn').style.display = 'none';
-            document.getElementById('boxStatus').innerText = "⏳ AI กำลังอ่านใบปะหน้า...";
+            document.getElementById('boxStatus').innerText = "⏳ ระบบหลังบ้านกำลังอ่านข้อมูล...";
             document.getElementById('boxStatus').style.color = "#d32f2f";
             await analyzeLabel(boxImageBase64);
         });
         document.getElementById('uploadBoxBtn').addEventListener('change', (e) => handleFileUpload(e, 'boxPreview', 'box'));
 
-        // สินค้าด้านใน
         document.getElementById('startProductCam').addEventListener('click', () => startCamera('productVideo', 'captureProductBtn', 'productPreview'));
         document.getElementById('captureProductBtn').addEventListener('click', async () => {
             productImageBase64 = captureImage('productVideo', 'productPreview');
             document.getElementById('captureProductBtn').style.display = 'none';
-            document.getElementById('productStatus').innerText = "⏳ AI กำลังประเมินสภาพ...";
+            document.getElementById('productStatus').innerText = "⏳ ระบบหลังบ้านกำลังประเมิน...";
             document.getElementById('productStatus').style.color = "#d32f2f";
             await analyzeCondition(productImageBase64);
         });
         document.getElementById('uploadProductBtn').addEventListener('change', (e) => handleFileUpload(e, 'productPreview', 'product'));
 
-        // --- ฟังก์ชัน Gemini API ---
-
-        async function callGeminiVision(base64Image, prompt) {
-            // ส่งรูปภาพไปวิเคราะห์ที่หลังบ้านแทน
-            const payload = {
-                action: "analyze",
-                imageBase64: base64Image,
-                prompt: prompt
-            };
-
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            
-            if (data.status === "error") {
-                throw new Error(data.message);
+        // --- ส่งข้อมูลไปวิเคราะห์ที่ Google Apps Script ---
+        async function callAppsScript(payload) {
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (data.status === "error") throw new Error(data.message);
+                return data;
+            } catch (error) {
+                throw new Error("ติดต่อฐานข้อมูลไม่ได้ (" + error.message + ")");
             }
-            
-            return data.text;
-        }
-            
-            // เช็คว่า Google ส่ง Error กลับมาหรือไม่
-            if (!response.ok || data.error) {
-                throw new Error(data.error?.message || "การเชื่อมต่อ API ล้มเหลว (ตรวจสอบ API Key)");
-            }
-            
-            return data.candidates[0].content.parts[0].text;
         }
 
         async function analyzeLabel(base64Image) {
             try {
-                // เปลี่ยนคำสั่งให้รัดกุมที่สุด
-                const prompt = "Extract data from this Thai shipping label. Return ONLY JSON format: {\"tracking\":\"...\", \"orderId\":\"...\", \"platform\":\"...\"}. Do not write any other text or markdown.";
-                let resultText = await callGeminiVision(base64Image, prompt);
+                const prompt = "Extract data from this Thai shipping label. Return ONLY JSON format: {\"tracking\":\"...\", \"orderId\":\"...\", \"platform\":\"...\"}. Do not write any other text.";
+                const dataResponse = await callAppsScript({ action: "analyze", imageBase64: base64Image, prompt: prompt });
                 
-                // ใช้เทคนิคดึงเฉพาะข้อความที่อยู่ในปีกกา {...} เพื่อตัดคำพูดขยะที่ AI อาจจะพิมพ์แถมมา
+                let resultText = dataResponse.text;
                 const startIndex = resultText.indexOf('{');
                 const endIndex = resultText.lastIndexOf('}') + 1;
+                if (startIndex === -1 || endIndex === 0) throw new Error("ข้อมูลผิดรูปแบบ: " + resultText);
                 
-                if (startIndex === -1 || endIndex === 0) {
-                    throw new Error("AI ตอบกลับผิดรูปแบบ: " + resultText);
-                }
+                const data = JSON.parse(resultText.substring(startIndex, endIndex));
                 
-                const jsonString = resultText.substring(startIndex, endIndex);
-                const data = JSON.parse(jsonString);
-                
-                // เติมข้อมูลลงช่อง
                 if(data.tracking) document.getElementById('tracking').value = data.tracking;
                 if(data.orderId) document.getElementById('orderId').value = data.orderId;
                 if(data.platform) {
@@ -256,10 +219,9 @@
                         }
                     }
                 }
-                document.getElementById('boxStatus').innerText = "✅ AI ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้อง";
+                document.getElementById('boxStatus').innerText = "✅ ดึงข้อมูลสำเร็จ!";
                 document.getElementById('boxStatus').style.color = "green";
             } catch (error) {
-                console.error("AI Error:", error);
                 document.getElementById('boxStatus').innerText = "❌ อ่านไม่สำเร็จ (" + error.message + ")";
                 document.getElementById('boxStatus').style.color = "#d32f2f";
             }
@@ -267,23 +229,24 @@
 
         async function analyzeCondition(base64Image) {
             try {
-                const prompt = "Analyze this product image. Briefly describe its physical condition in Thai (e.g., กล่องบุบ, สินค้าสมบูรณ์, มีรอยแกะ). Keep it under 2 sentences.";
-                const resultText = await callGeminiVision(base64Image, prompt);
-                document.getElementById('aiCondition').value = resultText.trim();
-                document.getElementById('productStatus').innerText = "✅ AI ประเมินสำเร็จ!";
+                const prompt = "Analyze this product image. Briefly describe physical condition in Thai (e.g., กล่องบุบ, สมบูรณ์). Keep under 2 sentences.";
+                const dataResponse = await callAppsScript({ action: "analyze", imageBase64: base64Image, prompt: prompt });
+                document.getElementById('aiCondition').value = dataResponse.text.trim();
+                document.getElementById('productStatus').innerText = "✅ ประเมินสำเร็จ!";
                 document.getElementById('productStatus').style.color = "green";
             } catch (error) {
-                document.getElementById('productStatus').innerText = "❌ AI ไม่สามารถประเมินได้";
+                document.getElementById('productStatus').innerText = "❌ ประเมินไม่ได้ (" + error.message + ")";
+                document.getElementById('productStatus').style.color = "#d32f2f";
             }
         }
 
-        // --- ฟังก์ชันบันทึกข้อมูล ---
+        // --- บันทึกข้อมูลลง Sheet ---
         document.getElementById('submitBtn').addEventListener('click', async () => {
             const btn = document.getElementById('submitBtn');
             const status = document.getElementById('submitStatus');
             
             if(!boxImageBase64 || !productImageBase64) {
-                alert("กรุณาใส่รูปทั้งหน้ากล่องและสินค้าด้านในให้ครบถ้วน");
+                alert("กรุณาใส่รูปทั้งหน้ากล่องและสินค้าด้านในให้ครบ");
                 return;
             }
 
@@ -292,11 +255,7 @@
             status.innerText = "";
 
             const payload = {
-                action: "submit", // เพิ่มบรรทัดนี้เข้ามา!
-                platform: document.getElementById('platform').value,
-                tracking: document.getElementById('tracking').value,
-                orderId: document.getElementById('orderId').value,
-                //... (ส่วนอื่นคงไว้เหมือนเดิม)
+                action: "submit",
                 platform: document.getElementById('platform').value,
                 tracking: document.getElementById('tracking').value,
                 orderId: document.getElementById('orderId').value,
@@ -306,26 +265,14 @@
                 boxImageBase64: boxImageBase64,
                 productImageBase64: productImageBase64
             };
-        
 
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                
-                if(result.status === "success") {
-                    status.style.color = "green";
-                    status.innerText = "🎉 บันทึกข้อมูลลง Google Sheet เรียบร้อยแล้ว!";
-                    setTimeout(() => location.reload(), 2000);
-                } else {
-                    status.innerText = "❌ เกิดข้อผิดพลาด: " + result.message;
-                    btn.disabled = false;
-                    btn.innerText = "💾 บันทึกข้อมูลลงระบบ";
-                }
+                const result = await callAppsScript(payload);
+                status.style.color = "green";
+                status.innerText = "🎉 บันทึกข้อมูลลงระบบเรียบร้อย!";
+                setTimeout(() => location.reload(), 2000);
             } catch (error) {
-                status.innerText = "❌ ไม่สามารถส่งข้อมูลได้: " + error.message;
+                status.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
                 btn.disabled = false;
                 btn.innerText = "💾 บันทึกข้อมูลลงระบบ";
             }
