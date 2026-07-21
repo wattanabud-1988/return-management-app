@@ -198,7 +198,7 @@
         document.getElementById('uploadProductBtn').addEventListener('change', (e) => handleFileUpload(e, 'productPreview', 'product'));
 
         // --- ฟังก์ชัน Gemini API ---
-        async function callGeminiVision(base64Image, prompt) {
+       async function callGeminiVision(base64Image, prompt) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
             const payload = {
                 contents: [{
@@ -215,6 +215,12 @@
                 body: JSON.stringify(payload)
             });
             const data = await response.json();
+            
+            // เช็คว่า Google ส่ง Error กลับมาหรือไม่
+            if (!response.ok || data.error) {
+                throw new Error(data.error?.message || "การเชื่อมต่อ API ล้มเหลว (ตรวจสอบ API Key)");
+            }
+            
             return data.candidates[0].content.parts[0].text;
         }
 
