@@ -220,17 +220,28 @@
 
         async function analyzeLabel(base64Image) {
             try {
-                const prompt = "Extract the following from this shipping label: 1) Return Tracking Number, 2) Order ID, 3) Platform (guess between Shopee, Lazada, TikTok based on logo or format). Return ONLY a valid JSON object with keys: 'tracking', 'orderId', 'platform'. Do not include markdown or other text.";
+                // เปลี่ยนคำสั่งให้รัดกุมที่สุด
+                const prompt = "Extract data from this Thai shipping label. Return ONLY JSON format: {\"tracking\":\"...\", \"orderId\":\"...\", \"platform\":\"...\"}. Do not write any other text or markdown.";
                 let resultText = await callGeminiVision(base64Image, prompt);
-                resultText = resultText.replace(/```json/g, '').replace(/```/g, ''); 
-                const data = JSON.parse(resultText);
                 
+                // ใช้เทคนิคดึงเฉพาะข้อความที่อยู่ในปีกกา {...} เพื่อตัดคำพูดขยะที่ AI อาจจะพิมพ์แถมมา
+                const startIndex = resultText.indexOf('{');
+                const endIndex = resultText.lastIndexOf('}') + 1;
+                
+                if (startIndex === -1 || endIndex === 0) {
+                    throw new Error("AI ตอบกลับผิดรูปแบบ: " + resultText);
+                }
+                
+                const jsonString = resultText.substring(startIndex, endIndex);
+                const data = JSON.parse(jsonString);
+                
+                // เติมข้อมูลลงช่อง
                 if(data.tracking) document.getElementById('tracking').value = data.tracking;
                 if(data.orderId) document.getElementById('orderId').value = data.orderId;
                 if(data.platform) {
                     const select = document.getElementById('platform');
                     for (let i = 0; i < select.options.length; i++) {
-                        if (select.options[i].value.toLowerCase() === data.platform.toLowerCase()) {
+                        if (select.options[i].value.toLowerCase().includes(data.platform.toLowerCase())) {
                             select.selectedIndex = i;
                             break;
                         }
@@ -239,7 +250,9 @@
                 document.getElementById('boxStatus').innerText = "✅ AI ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้อง";
                 document.getElementById('boxStatus').style.color = "green";
             } catch (error) {
-                document.getElementById('boxStatus').innerText = "❌ AI อ่านไม่สำเร็จ กรุณากรอกข้อมูลเอง";
+                console.error("AI Error:", error);
+                document.getElementById('boxStatus').innerText = "❌ อ่านไม่สำเร็จ (" + error.message + ")";
+                document.getElementById('boxStatus').style.color = "#d32f2f";
             }
         }
 
