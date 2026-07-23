@@ -14,17 +14,16 @@
         .loading { display: none; }
         
         /* สไตล์สำหรับหน้าต่างรายละเอียด */
-        .modal-detail-bg { background-color: #fcfaf5; } /* สีพื้นหลังครีมอ่อน */
+        .modal-detail-bg { background-color: #fcfaf5; } 
         .grid-detail { font-size: 0.85rem; }
         .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
-        .notes-box { background-color: #f3efe6; border-radius: 10px; } /* สีพื้นหลังหมายเหตุ */
+        .notes-box { background-color: #f3efe6; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div class="container py-4" style="max-width: 600px;">
         <h3 class="text-center mb-3 fw-bold text-primary"><i class="bi bi-box-seam"></i> ระบบรับสินค้าตีกลับ</h3>
 
-        <!-- ปุ่มเปิดประวัติการบันทึก -->
         <div class="text-end mb-3">
             <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm" onclick="fetchRecords()" data-bs-toggle="modal" data-bs-target="#recordsModal">
                 <i class="bi bi-clock-history"></i> ประวัติล่าสุด (10 รายการ)
@@ -46,7 +45,7 @@
                 </div>
                 
                 <div id="analyzeLoading" class="loading text-center text-primary mb-3 fw-bold">
-                    <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความผ่าน Google Drive...
+                    <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...
                 </div>
                 <div id="analyzeError" class="text-danger small mb-3 text-center fw-bold"></div>
 
@@ -128,9 +127,7 @@
         </button>
     </div>
 
-    <!-- ---------------------------------------------------- -->
     <!-- Modal 1: หน้ารายการประวัติ (List) -->
-    <!-- ---------------------------------------------------- -->
     <div class="modal fade" id="recordsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
@@ -138,18 +135,12 @@
                     <h5 class="modal-title fw-bold"><i class="bi bi-card-list"></i> 10 รายการล่าสุด</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0" id="recordsBody">
-                    <div class="text-center text-muted my-4">
-                        <div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังโหลดข้อมูล...
-                    </div>
-                </div>
+                <div class="modal-body p-0" id="recordsBody"></div>
             </div>
         </div>
     </div>
 
-    <!-- ---------------------------------------------------- -->
     <!-- Modal 2: หน้ารายละเอียดเชิงลึก (Detail View) -->
-    <!-- ---------------------------------------------------- -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content modal-detail-bg">
@@ -161,19 +152,17 @@
                     <!-- หัวข้อเลขพัสดุ -->
                     <h4 class="fw-bold mb-3" id="detailTracking">JTTH...</h4>
                     
-                    <!-- ป้ายแพลตฟอร์ม & สถานะ -->
                     <div class="mb-3">
                         <span class="badge bg-dark me-1" id="detailPlatform">Platform</span>
-                        <span class="badge" id="detailConditionBadge" style="background-color: #d4edda; color: #155724;">ปกติ</span>
+                        <span class="badge" id="detailConditionBadge">ปกติ</span>
                     </div>
                     
-                    <!-- แถบแจ้งเตือนส่งเข้า Sheet -->
                     <div class="alert alert-success py-2 mb-3 d-flex align-items-center rounded-3 border-0" style="background-color: #e8f5e9;">
                         <i class="bi bi-check-circle-fill text-success me-2"></i> 
                         <span class="text-success fw-bold" style="font-size: 0.85rem;">ส่งเข้า Google Sheet แล้ว</span>
                     </div>
                     
-                    <!-- รูปกล่องก่อนเปิด -->
+                    <!-- ส่วนแสดงรูปกล่อง -->
                     <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailBoxContainer">
                         <img id="detailBoxImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
                         <div class="card-body py-2 px-3 border-top bg-white">
@@ -181,7 +170,17 @@
                         </div>
                     </div>
                     
-                    <!-- รูปสินค้าภายใน -->
+                    <!-- ส่วนแสดงวิดีโอ (เพิ่มใหม่) -->
+                    <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailVideoContainer">
+                        <div class="ratio ratio-16x9 bg-dark">
+                            <iframe id="detailVideoFrame" src="" allow="autoplay" allowfullscreen style="border:none;"></iframe>
+                        </div>
+                        <div class="card-body py-2 px-3 border-top bg-white">
+                            <small class="fw-bold text-dark">วิดีโอตอนเปิดเช็คของ</small>
+                        </div>
+                    </div>
+
+                    <!-- ส่วนแสดงรูปสินค้า -->
                     <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailProdContainer">
                         <img id="detailProdImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
                         <div class="card-body py-2 px-3 border-top bg-white">
@@ -189,7 +188,6 @@
                         </div>
                     </div>
                     
-                    <!-- ตารางกริดข้อมูล -->
                     <div class="card border-0 shadow-sm mb-3 rounded-4 overflow-hidden">
                         <div class="row g-0 grid-detail bg-white">
                             <div class="col-6 border-end border-bottom">
@@ -215,7 +213,6 @@
                         </div>
                     </div>
                     
-                    <!-- หมายเหตุ -->
                     <div class="notes-box p-3 shadow-sm">
                         <small class="fw-bold d-block mb-1 text-dark">หมายเหตุการตรวจสภาพ</small>
                         <small class="text-secondary" id="detailNotes">-</small>
@@ -229,29 +226,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // ลิงก์ Web App (อัปเดตล่าสุด)
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyMY6DZH8DhBf2rLBcTnb15amHL0kHhj8oAdY9Mvo5sTUYoXQaGhoEV2-8LqTDd53ii/exec";
 
         let boxImageBase64 = "";
         let productImageBase64 = "";
         let videoBase64Data = "";
         let videoMimeType = "";
-        let globalRecords = []; // ตัวแปรเก็บข้อมูลประวัติทั้งหมด
+        let globalRecords = [];
 
-        // 1. ฟังก์ชันดึงประวัติมาแสดงเป็น List
         async function fetchRecords() {
             const recordsBody = document.getElementById('recordsBody');
             recordsBody.innerHTML = '<div class="text-center text-muted my-4"><div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังดึงข้อมูล...</div>';
             
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: "getRecords" })
-                });
+                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getRecords" }) });
                 const result = await response.json();
                 
                 if (result.status === "success") {
-                    globalRecords = result.data; // เก็บข้อมูลลงตัวแปร
+                    globalRecords = result.data; 
                     
                     if(globalRecords.length === 0) {
                         recordsBody.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
@@ -261,7 +253,6 @@
                     let html = '<div class="list-group list-group-flush">';
                     globalRecords.forEach((item, index) => {
                         let badgeClass = item.finalCondition.includes("สมบูรณ์") ? "bg-success" : "bg-danger";
-                        
                         html += `
                         <div class="list-group-item list-group-item-action py-3 border-bottom" onclick="openDetail(${index})" style="cursor: pointer;">
                             <div class="d-flex w-100 justify-content-between align-items-center mb-1">
@@ -284,20 +275,23 @@
             }
         }
 
-        // 2. ฟังก์ชันเปิดหน้าต่างรายละเอียดเจาะลึก (ตามรูปต้นแบบ)
+        // ฟังก์ชันดึง ID จากลิงก์ Google Drive
+        function getDriveId(url) {
+            if(!url) return null;
+            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : null;
+        }
+
         function openDetail(index) {
             const item = globalRecords[index];
             
-            // ซ่อนหน้าต่าง List อันเก่าก่อน
             var recordsModalEl = document.getElementById('recordsModal');
             var recordsModal = bootstrap.Modal.getInstance(recordsModalEl);
             if (recordsModal) { recordsModal.hide(); }
             
-            // เติมข้อมูลลงไปในหน้าต่างรายละเอียด
             document.getElementById('detailTracking').innerText = item.tracking;
             document.getElementById('detailPlatform').innerText = item.platform;
             
-            // ตั้งค่าป้ายสถานะ (สีเขียว/แดง)
             const condBadge = document.getElementById('detailConditionBadge');
             condBadge.innerText = item.finalCondition;
             if (item.finalCondition.includes("สมบูรณ์")) {
@@ -308,45 +302,45 @@
                 condBadge.style.color = "#721c24";
             }
 
-            // ฟังก์ชันแปลงลิงก์ Google Drive ให้อ่านเป็นรูปภาพได้โดยตรง
-            function getDriveImgUrl(url) {
-                if(!url) return null;
-                let match = url.match(/\/d\/(.+?)\//);
-                return match ? 'https://drive.google.com/uc?id=' + match[1] : null;
-            }
-
             // จัดการรูปกล่อง
-            let boxUrl = getDriveImgUrl(item.boxImageUrl);
-            if(boxUrl) {
-                document.getElementById('detailBoxImg').src = boxUrl;
+            let boxId = getDriveId(item.boxImageUrl);
+            if(boxId) {
+                document.getElementById('detailBoxImg').src = 'https://drive.google.com/uc?id=' + boxId;
                 document.getElementById('detailBoxContainer').classList.remove('d-none');
             } else {
                 document.getElementById('detailBoxContainer').classList.add('d-none');
             }
 
+            // จัดการวิดีโอ (เล่นผ่าน iframe ของ Google Drive)
+            let videoId = getDriveId(item.videoUrl);
+            if(videoId) {
+                document.getElementById('detailVideoFrame').src = 'https://drive.google.com/file/d/' + videoId + '/preview';
+                document.getElementById('detailVideoContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('detailVideoContainer').classList.add('d-none');
+            }
+
             // จัดการรูปสินค้า
-            let prodUrl = getDriveImgUrl(item.productImageUrl);
-            if(prodUrl) {
-                document.getElementById('detailProdImg').src = prodUrl;
+            let prodId = getDriveId(item.productImageUrl);
+            if(prodId) {
+                document.getElementById('detailProdImg').src = 'https://drive.google.com/uc?id=' + prodId;
                 document.getElementById('detailProdContainer').classList.remove('d-none');
             } else {
                 document.getElementById('detailProdContainer').classList.add('d-none');
             }
 
-            // เติมข้อมูลในตาราง
             document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
             document.getElementById('detailOrderId').innerText = item.orderId;
             document.getElementById('detailShop').innerText = item.platform;
             document.getElementById('detailDate').innerText = item.date;
             document.getElementById('detailNotes').innerText = item.notes;
 
-            // เปิดหน้าต่างรายละเอียด
             var detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
             detailModal.show();
         }
 
         // ----------------------------------------------------
-        // ฟังก์ชันจัดการฟอร์มอัปโหลดด้านล่างนี้ (คงเดิมทั้งหมด)
+        // ส่วนจัดการฟอร์มอัปโหลด
         // ----------------------------------------------------
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
@@ -458,6 +452,11 @@
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> บันทึกข้อมูลลงระบบ';
         }
+
+        // เมื่อปิดหน้าต่าง Detail ให้หยุดเล่นวิดีโอ (ถ้ากำลังเล่นอยู่)
+        document.getElementById('detailModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('detailVideoFrame').src = '';
+        });
     </script>
 </body>
 </html>
