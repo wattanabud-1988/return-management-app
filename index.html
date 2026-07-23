@@ -123,6 +123,21 @@
         .grid-detail { font-size: 0.85rem; }
         .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
         .notes-box { background-color: #f3efe6; border-radius: 10px; }
+
+        /* ========================================================
+           สไตล์ใหม่สำหรับหน้า Step 2 (ปุ่ม Platform, Return Type) 
+        ======================================================== */
+        .btn-platform { border-radius: 8px; font-weight: 500; border: none; padding: 10px 12px; flex: 1; text-align: center; color: white; opacity: 0.4; transition: all 0.2s; font-size: 14px; }
+        .btn-platform.active { opacity: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .platform-lazada { background-color: #845ef7; } 
+        .platform-shopee { background-color: #ff8c72; } 
+        .platform-tiktok { background-color: #212529; } 
+
+        .return-type-box { border: 1px solid #ced4da; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; background: #fff; transition: all 0.2s; color: #6c757d; font-weight: 500; font-size: 14px; }
+        .return-type-box.active { border: 1px solid #2d6a4f; background-color: #e9f5ec; color: #1b4332; font-weight: bold; }
+        
+        .btn-check-api { background-color: #e9f5ec; border: 1px solid #2d6a4f; color: #1b4332; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.2s; }
+        .btn-check-api:hover { background-color: #d8eadc; }
     </style>
 </head>
 <body>
@@ -285,9 +300,9 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: ข้อมูล OCR -->
+                    <!-- Step 2: ข้อมูล OCR (UI ใหม่) -->
                     <div id="step2" class="wizard-step d-none">
-                        <div class="info-box">
+                        <div class="info-box mb-2">
                             <i class="bi bi-robot"></i>
                             <div>
                                 <h6>ตรวจสอบข้อมูลอัตโนมัติ</h6>
@@ -295,26 +310,56 @@
                             </div>
                         </div>
                         
-                        <div id="analyzeLoading" class="text-center text-primary mb-3 fw-bold loading">
+                        <!-- โหลดดิ้งตอนกำลังค้นหา -->
+                        <div id="analyzeLoading" class="text-center text-success my-3 fw-bold" style="display: none; font-size: 14px;">
                             <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...
                         </div>
-                        <div id="analyzeError" class="text-danger small mb-3 text-center fw-bold"></div>
+
+                        <!-- แถบแจ้งเตือนสีแดง (กรณีไม่เจอ) -->
+                        <div id="errorAlertBox" class="alert mb-3 d-none text-danger" style="background-color: #fdf3f4; border: 1px solid #f5c6cb; border-radius: 8px; font-size: 13px;">
+                            ⚠️ สแกนเจอเลขพัสดุ แต่ตรวจสอบไม่พบใน 3 ร้านค้าของเรา
+                        </div>
+
+                        <!-- แถบแจ้งเตือนสีเขียว (โชว์เมื่อทำสำเร็จ) -->
+                        <div id="successAlertBox" class="alert mb-3 d-none" style="background-color: #e9f5ec; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724; font-size: 13px;">
+                            <span id="successMsgText"></span>
+                        </div>
 
                         <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
-                            <label class="form-label fw-bold">แพลตฟอร์ม:</label>
-                            <select id="platform" class="form-select bg-light mb-3 border-0">
-                                <option value="">-- เลือกแพลตฟอร์ม --</option>
-                                <option value="Shopee">Shopee</option>
-                                <option value="Lazada">Lazada</option>
-                                <option value="TikTok">TikTok</option>
-                                <option value="อื่นๆ">อื่นๆ</option>
-                            </select>
-                            
-                            <label class="form-label fw-bold">เลขพัสดุรับคืน (Tracking):</label>
-                            <input type="text" id="tracking" class="form-control bg-light mb-3 border-0">
-                            
-                            <label class="form-label fw-bold">หมายเลขคำสั่งซื้อ (Order ID):</label>
-                            <input type="text" id="orderId" class="form-control bg-light border-0">
+                            <!-- แพลตฟอร์ม (ปุ่มกดแบบใหม่) -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">แพลตฟอร์ม</label>
+                            <div class="d-flex gap-2 mb-3" id="platformGroup">
+                                <button type="button" id="btn-Lazada" class="btn-platform platform-lazada" onclick="selectPlatform('Lazada')">Lazada</button>
+                                <button type="button" id="btn-Shopee" class="btn-platform platform-shopee" onclick="selectPlatform('Shopee')">Shopee</button>
+                                <button type="button" id="btn-TikTok" class="btn-platform platform-tiktok active" onclick="selectPlatform('TikTok')">✓ TikTok</button>
+                            </div>
+                            <input type="hidden" id="platform" value="TikTok">
+
+                            <!-- เลขพัสดุ -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">เลขพัสดุ / เลขคืนสินค้า <span class="text-danger">*</span></label>
+                            <input type="text" id="tracking" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="สแกนหรือพิมพ์เลขพัสดุ">
+
+                            <!-- ปุ่มตรวจสอบ API (กดด้วยมือ) -->
+                            <button type="button" class="btn w-100 mb-4 btn-check-api py-2" onclick="manualCheckAPI()">
+                                <span id="checkApiText">🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน</span>
+                            </button>
+
+                            <!-- ประเภทการรับคืน -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">ประเภทการรับคืน</label>
+                            <div class="d-flex flex-column gap-2 mb-3" id="returnTypeGroup">
+                                <div id="type-สินค้าตีกลับ" class="return-type-box" onclick="selectReturnType('สินค้าตีกลับ')">สินค้าตีกลับ</div>
+                                <div id="type-ลูกค้าคืนสินค้า" class="return-type-box" onclick="selectReturnType('ลูกค้าคืนสินค้า')">ลูกค้าคืนสินค้า</div>
+                                <div id="type-รอตรวจสอบ" class="return-type-box active" onclick="selectReturnType('รอตรวจสอบ')">✓ รอตรวจสอบ</div>
+                            </div>
+                            <input type="hidden" id="returnType" value="รอตรวจสอบ">
+
+                            <!-- เลขคำสั่งซื้อ -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
+                            <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="รอตรวจสอบ...">
+
+                            <!-- ร้านค้าที่พบข้อมูล -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
+                            <input type="text" id="shopName" class="form-control mb-2" style="border-radius: 8px; font-size: 15px;" placeholder="รอตรวจสอบ..." readonly>
                         </div>
                     </div>
 
@@ -374,6 +419,7 @@
                         
                         <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
                             <label class="form-label fw-bold">ผลประเมินสภาพ (ถ้ามี):</label>
+                            <!-- เก็บ id="aiCondition" ไว้หน้า 5 เหมือนเดิม เพื่อไม่กระทบระบบเดิม -->
                             <input type="text" id="aiCondition" class="form-control bg-light border-0 mb-3" placeholder="-">
                             
                             <label class="form-label fw-bold">สถานะสินค้าขั้นสุดท้าย:</label>
@@ -478,33 +524,24 @@
         let wizardModalInstance = null;
         let ocrTriggered = false;
 
-        // ฟังก์ชันสลับหน้าจอ (Tab Switching)
         function switchTab(tabId, element) {
             document.getElementById('dashboardView').classList.add('d-none');
             document.getElementById('historyView').classList.add('d-none');
-            
             document.getElementById(tabId).classList.remove('d-none');
-            
             const navItems = document.querySelectorAll('.bottom-nav .nav-item');
             navItems.forEach(nav => nav.classList.remove('active'));
-            
-            if (element) {
-                element.classList.add('active');
-            }
+            if (element) element.classList.add('active');
         }
 
-        // โหลดข้อมูลอัตโนมัติเมื่อเปิดหน้าเว็บ
         window.onload = function() {
             wizardModalInstance = new bootstrap.Modal(document.getElementById('wizardModal'));
             fetchRecords();
         };
 
-        // ฟังก์ชันดึงประวัติ
         async function fetchRecords() {
             try {
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getRecords" }) });
                 const result = await response.json();
-                
                 if (result.status === "success") {
                     globalRecords = result.data; 
                     updateDashboardStats();
@@ -518,11 +555,7 @@
         }
 
         function updateDashboardStats() {
-            const todayStr = new Date().toLocaleDateString('th-TH');
-            let todayCount = 0;
-            globalRecords.forEach(item => {
-                if(item.date.includes(new Date().getDate())) todayCount++; 
-            });
+            const todayCount = globalRecords.filter(item => item.date.includes(new Date().getDate())).length;
             document.getElementById('todayCount').innerText = todayCount > 0 ? todayCount : globalRecords.length;
         }
 
@@ -540,7 +573,6 @@
                 listContainer.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
                 return;
             }
-            
             let html = '';
             records.forEach((item, index) => {
                 html += `
@@ -556,7 +588,6 @@
             listContainer.innerHTML = html;
         }
 
-        // ระบบค้นหา
         function filterRecords() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = globalRecords.filter(item => item.tracking.toLowerCase().includes(query) || item.orderId.toLowerCase().includes(query));
@@ -564,7 +595,7 @@
         }
 
         // ==========================================
-        // ระบบ WIZARD ควบคุมหน้าจอ 5 สเต็ป
+        // UI ควบคุมฟอร์ม 5 สเต็ป
         // ==========================================
         const stepTitles = ["ถ่ายรูปกล่องพัสดุ", "ตรวจสอบเลขคืนสินค้า", "ถ่ายวิดีโอเปิดกล่อง", "ถ่ายรูปสินค้าภายใน", "ประเมินสภาพสินค้า"];
 
@@ -575,14 +606,11 @@
             wizardModalInstance.show();
         }
 
-        function closeWizard() {
-            wizardModalInstance.hide();
-        }
+        function closeWizard() { wizardModalInstance.hide(); }
 
         function updateWizardUI() {
             for(let i=1; i<=totalSteps; i++) {
                 document.getElementById('step'+i).classList.add('d-none');
-                
                 let ind = document.getElementById('indicator'+i);
                 if(i < currentStep) {
                     ind.classList.add('completed');
@@ -645,7 +673,56 @@
         }
 
         // ==========================================
-        // ฟังก์ชันจัดการไฟล์
+        // ฟังก์ชันจัดการ UI ใหม่ (ปุ่มสีๆ ใน Step 2)
+        // ==========================================
+        function selectPlatform(platformName) {
+            document.querySelectorAll('.btn-platform').forEach(btn => {
+                btn.classList.remove('active');
+                btn.innerText = btn.innerText.replace('✓ ', '');
+            });
+            const activeBtn = document.getElementById('btn-' + platformName);
+            if(activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.innerText = '✓ ' + platformName;
+            }
+            document.getElementById('platform').value = platformName;
+        }
+
+        function selectReturnType(typeName) {
+            document.querySelectorAll('.return-type-box').forEach(box => {
+                box.classList.remove('active');
+                box.innerText = box.innerText.replace('✓ ', '');
+            });
+            const activeBox = document.getElementById('type-' + typeName);
+            if(activeBox) {
+                activeBox.classList.add('active');
+                activeBox.innerText = '✓ ' + typeName;
+            }
+            document.getElementById('returnType').value = typeName;
+        }
+
+        function updateUIWithData(data) {
+            if (data.platform) selectPlatform(data.platform);
+            
+            document.getElementById('tracking').value = data.tracking || document.getElementById('tracking').value;
+            if (data.orderId) document.getElementById('orderId').value = data.orderId;
+            
+            if (data.shopName) document.getElementById('shopName').value = data.shopName;
+            if (data.returnType) selectReturnType(data.returnType);
+
+            document.getElementById('successAlertBox').classList.add('d-none');
+            document.getElementById('errorAlertBox').classList.add('d-none');
+
+            if (data.shopName && data.orderId) {
+                document.getElementById('successAlertBox').classList.remove('d-none');
+                document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value}</b> ในข้อมูล TikTok · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
+            } else if (data.platform === "TikTok" && document.getElementById('tracking').value) {
+                document.getElementById('errorAlertBox').classList.remove('d-none');
+            }
+        }
+
+        // ==========================================
+        // ฟังก์ชันจัดการไฟล์และค้นหาข้อมูล API
         // ==========================================
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
@@ -696,7 +773,6 @@
             const nameEl = document.getElementById('videoFileName');
             nameEl.innerText = file.name + " (" + (file.size / (1024*1024)).toFixed(2) + " MB)";
             nameEl.classList.remove('d-none');
-            
             document.getElementById('videoUploadArea').classList.add('has-file');
             
             videoMimeType = file.type;
@@ -710,53 +786,42 @@
 
         async function analyzeBoxImage(base64Data) {
             document.getElementById('analyzeLoading').style.display = 'block';
-            document.getElementById('analyzeError').innerText = "";
-            const payload = { action: "analyze", prompt: "label", imageBase64: base64Data };
+            const payload = { action: "analyze", imageBase64: base64Data };
             
             try {
-                // เปลี่ยนข้อความให้รู้ว่ากำลังทำ 2 อย่างพร้อมกัน
                 document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังสแกนพัสดุและค้นหาร้านค้า...';
-                
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
                 
                 if (result.status === "success") {
-                    try {
-                        const data = JSON.parse(result.text);
-                        
-                        // 1. ใส่เลขพัสดุ (Tracking) ที่อ่านได้
-                        document.getElementById('tracking').value = data.tracking || "";
-                        
-                        // 2. ใส่แพลตฟอร์ม/ชื่อร้านค้าที่ระบบไปหามาให้
-                        if (data.platform) {
-                            const selectEl = document.getElementById('platform');
-                            let exists = false;
-                            for(let i=0; i<selectEl.options.length; i++) {
-                                if(selectEl.options[i].value === data.platform) exists = true;
-                            }
-                            if(!exists) selectEl.add(new Option(data.platform, data.platform));
-                            selectEl.value = data.platform;
-                        }
-                        
-                        // 3. ใส่หมายเลขคำสั่งซื้อ (Order ID จริงๆ ที่ไม่ใช่เลข Return)
-                        if (data.orderId) {
-                            document.getElementById('orderId').value = data.orderId;
-                        }
-                        
-                        // แจ้งเตือนถ้าเจอกล่อง แต่หาใน API ร้านค้าไม่เจอ
-                        if (data.platform === "TikTok" && (!data.orderId || data.orderId.startsWith("328"))) {
-                             document.getElementById('analyzeError').innerHTML = "⚠️ สแกนเลขพัสดุเจอ แต่ตรวจสอบไม่พบใน 3 ร้านค้าของเรา";
-                        }
-
-                    } catch (e) { document.getElementById('analyzeError').innerText = "❌ ดึงข้อมูลสำเร็จ แต่รูปแบบไม่ถูกต้อง"; }
-                } else { document.getElementById('analyzeError').innerText = "❌ อ่านไม่สำเร็จ: " + result.message; }
-            } catch (error) { document.getElementById('analyzeError').innerText = "❌ การเชื่อมต่อขัดข้อง"; } 
+                    updateUIWithData(JSON.parse(result.text));
+                }
+            } catch (error) { console.error("OCR Error:", error); } 
             finally { 
                 document.getElementById('analyzeLoading').style.display = 'none'; 
-                document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...';
             }
         }
 
+        async function manualCheckAPI() {
+            const trackingInput = document.getElementById('tracking').value;
+            if(!trackingInput) return alert("กรุณากรอกเลขพัสดุก่อนตรวจสอบ");
+
+            const btn = document.getElementById('checkApiText');
+            btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังค้นหา...';
+            
+            const payload = { action: "analyze", manualTracking: trackingInput };
+            try {
+                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (result.status === "success") {
+                    updateUIWithData(JSON.parse(result.text));
+                }
+            } catch (error) { 
+                console.error("API Error:", error); 
+            } finally {
+                btn.innerHTML = '🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน';
+            }
+        }
 
         async function submitData() {
             const btn = document.getElementById('btnNext');
@@ -772,9 +837,10 @@
                 productImageBase64: productImageBase64,
                 videoBase64Data: videoBase64Data, 
                 videoMimeType: videoMimeType,
-                aiCondition: document.getElementById('aiCondition').value,
+                aiCondition: document.getElementById('returnType').value, // นำ Return Type ไปบันทึกลงชีตแทน
                 finalCondition: document.getElementById('finalCondition').value,
-                notes: document.getElementById('notes').value
+                notes: document.getElementById('notes').value,
+                shopName: document.getElementById('shopName').value
             };
 
             try {
@@ -786,17 +852,17 @@
                 } else {
                     alert("❌ เกิดข้อผิดพลาด: " + result.message);
                     btn.disabled = false;
-                    btn.innerText = "บันทึกข้อมูล";
+                    btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-1"></i> บันทึกข้อมูล';
                 }
             } catch (error) {
                 alert("❌ การเชื่อมต่อขัดข้อง: " + error.message);
                 btn.disabled = false;
-                btn.innerText = "บันทึกข้อมูล";
+                btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-1"></i> บันทึกข้อมูล';
             }
         }
 
         // ==========================================
-        // ระบบเปิดดูรายละเอียด
+        // ระบบเปิดดูรายละเอียด History
         // ==========================================
         function getDriveId(url) {
             if(!url) return null;
@@ -840,7 +906,7 @@
 
             document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
             document.getElementById('detailOrderId').innerText = item.orderId;
-            document.getElementById('detailShop').innerText = item.platform;
+            document.getElementById('detailShop').innerText = item.shopName || item.platform;
             document.getElementById('detailDate').innerText = item.date;
             document.getElementById('detailNotes').innerText = item.notes;
 
