@@ -24,6 +24,7 @@
     <div class="container py-4" style="max-width: 600px;">
         <h3 class="text-center mb-3 fw-bold text-primary"><i class="bi bi-box-seam"></i> ระบบรับสินค้าตีกลับ</h3>
 
+        <!-- ปุ่มเปิดประวัติการบันทึก -->
         <div class="text-end mb-3">
             <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm" onclick="fetchRecords()" data-bs-toggle="modal" data-bs-target="#recordsModal">
                 <i class="bi bi-clock-history"></i> ประวัติล่าสุด (10 รายการ)
@@ -170,7 +171,7 @@
                         </div>
                     </div>
                     
-                    <!-- ส่วนแสดงวิดีโอ (เพิ่มใหม่) -->
+                    <!-- ส่วนแสดงวิดีโอ (เล่นผ่าน iframe ของ Google Drive) -->
                     <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailVideoContainer">
                         <div class="ratio ratio-16x9 bg-dark">
                             <iframe id="detailVideoFrame" src="" allow="autoplay" allowfullscreen style="border:none;"></iframe>
@@ -275,10 +276,10 @@
             }
         }
 
-        // ฟังก์ชันดึง ID จากลิงก์ Google Drive
+        // ฟังก์ชันดึง ID จากลิงก์ Google Drive (ปรับปรุงเพื่อรองรับหลายรูปแบบ)
         function getDriveId(url) {
             if(!url) return null;
-            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
             return match ? match[1] : null;
         }
 
@@ -302,10 +303,10 @@
                 condBadge.style.color = "#721c24";
             }
 
-            // จัดการรูปกล่อง
+            // จัดการรูปกล่อง (ใช้ Thumbnail API แก้ปัญหารูปไม่ขึ้น)
             let boxId = getDriveId(item.boxImageUrl);
             if(boxId) {
-                document.getElementById('detailBoxImg').src = 'https://drive.google.com/uc?id=' + boxId;
+                document.getElementById('detailBoxImg').src = 'https://drive.google.com/thumbnail?id=' + boxId + '&sz=w800';
                 document.getElementById('detailBoxContainer').classList.remove('d-none');
             } else {
                 document.getElementById('detailBoxContainer').classList.add('d-none');
@@ -320,10 +321,10 @@
                 document.getElementById('detailVideoContainer').classList.add('d-none');
             }
 
-            // จัดการรูปสินค้า
+            // จัดการรูปสินค้า (ใช้ Thumbnail API แก้ปัญหารูปไม่ขึ้น)
             let prodId = getDriveId(item.productImageUrl);
             if(prodId) {
-                document.getElementById('detailProdImg').src = 'https://drive.google.com/uc?id=' + prodId;
+                document.getElementById('detailProdImg').src = 'https://drive.google.com/thumbnail?id=' + prodId + '&sz=w800';
                 document.getElementById('detailProdContainer').classList.remove('d-none');
             } else {
                 document.getElementById('detailProdContainer').classList.add('d-none');
