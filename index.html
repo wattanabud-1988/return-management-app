@@ -3,280 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบรับคืนสินค้า</title>
+    <title>ระบบรับสินค้าคืน/ตีกลับ</title>
+    <!-- โหลดสไตล์ CSS (Bootstrap) และ Icon -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; max-width: 600px; margin: auto; }
-        h2 { text-align: center; color: #333; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        video { width: 100%; border-radius: 8px; background: #000; display: none; margin-top: 10px; }
-        canvas { display: none; }
-        img { width: 100%; border-radius: 8px; margin-top: 10px; display: none; border: 1px solid #ddd; }
-        label { font-weight: bold; margin-top: 10px; display: block; color: #555; }
-        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button, .btn-upload-label { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; color: white; display: inline-block; text-align: center; box-sizing: border-box; }
-        
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-camera { background-color: #007bff; flex: 1; margin-top: 0; }
-        .btn-upload-label { background-color: #6c757d; flex: 1; margin-top: 0; }
-        .btn-capture { background-color: #28a745; display: none; margin-top: 10px; }
-        .btn-submit { background-color: #ff9800; font-weight: bold; margin-top: 20px; }
-        .status { text-align: center; margin-top: 10px; font-weight: bold; color: #d32f2f; }
-        input[type="file"] { display: none; }
+        body { background-color: #f8f9fa; font-family: 'Sarabun', sans-serif; }
+        .card { transition: all 0.2s ease; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+        .loading { display: none; }
     </style>
 </head>
 <body>
+    <div class="container py-4" style="max-width: 600px;">
+        <h3 class="text-center mb-4 fw-bold text-primary"><i class="bi bi-box-seam"></i> ระบบรับสินค้าตีกลับ</h3>
 
-    <h2>📦 ระบบรับสินค้าคืน/ตีกลับ</h2>
+        <!-- 1. รูปใบปะหน้ากล่อง -->
+        <div class="card mb-4 shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold mb-3 text-secondary">1. รูปใบปะหน้ากล่อง</h5>
+                
+                <div class="d-grid mb-3">
+                    <button type="button" class="btn btn-primary py-2 fw-bold" onclick="document.getElementById('boxInput').click()">
+                        <i class="bi bi-camera"></i> เปิดกล้อง / เลือกรูป
+                    </button>
+                    <!-- ปุ่มซ่อนสำหรับเลือกไฟล์ -->
+                    <input type="file" id="boxInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'box')">
+                </div>
+                
+                <!-- พรีวิวรูปกล่อง -->
+                <div id="boxPreviewContainer" class="d-none text-center mb-3">
+                    <img id="boxPreview" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
+                </div>
+                
+                <!-- สถานะการอ่าน OCR -->
+                <div id="analyzeLoading" class="loading text-center text-primary mb-3 fw-bold">
+                    <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความผ่าน Google Drive...
+                </div>
+                <div id="analyzeError" class="text-danger small mb-3 text-center fw-bold"></div>
 
-    <!-- ส่วนที่ 1: ถ่ายรูป/อัปโหลด หน้ากล่อง -->
-    <div class="card">
-        <h3>1. รูปใบปะหน้ากล่อง</h3>
-        <div class="btn-group">
-            <button class="btn-camera" id="startBoxCam">📷 เปิดกล้อง</button>
-            <label class="btn-upload-label">
-                📂 เลือกรูป
-                <input type="file" id="uploadBoxBtn" accept="image/*">
-            </label>
+                <!-- ฟอร์มข้อมูลจากหน้ากล่อง -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">แพลตฟอร์ม:</label>
+                    <select id="platform" class="form-select bg-light">
+                        <option value="">-- เลือกแพลตฟอร์ม --</option>
+                        <option value="Shopee">Shopee</option>
+                        <option value="Lazada">Lazada</option>
+                        <option value="TikTok">TikTok</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">เลขพัสดุรับคืน (Tracking):</label>
+                    <input type="text" id="tracking" class="form-control" placeholder="ระบบจะเติมให้อัตโนมัติ">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">หมายเลขคำสั่งซื้อ (Order ID):</label>
+                    <input type="text" id="orderId" class="form-control" placeholder="ระบบจะเติมให้อัตโนมัติ">
+                </div>
+            </div>
         </div>
-        <video id="boxVideo" autoplay playsinline></video>
-        <button class="btn-capture" id="captureBoxBtn">📸 ถ่ายรูปและดึงข้อมูลด้วย AI</button>
-        <img id="boxPreview" alt="Box Preview">
-        <p class="status" id="boxStatus"></p>
 
-        <label>แพลตฟอร์ม:</label>
-        <select id="platform">
-            <option value="">-- เลือกแพลตฟอร์ม --</option>
-            <option value="Shopee">Shopee</option>
-            <option value="Lazada">Lazada</option>
-            <option value="TikTok">TikTok</option>
-        </select>
+        <!-- 2. วิดีโอตอนเปิดเช็คของ -->
+        <div class="card mb-4 shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold mb-3 text-secondary">2. วิดีโอตอนเปิดเช็คของ (ถ้ามี)</h5>
+                
+                <div class="d-grid mb-3">
+                    <button type="button" class="btn btn-danger py-2 fw-bold" onclick="document.getElementById('videoInput').click()">
+                        <i class="bi bi-camera-video"></i> ถ่าย / อัปโหลดวิดีโอ
+                    </button>
+                    <!-- ปุ่มซ่อนสำหรับวิดีโอ (capture="environment" เพื่อเรียกกล้องหลังมือถือ) -->
+                    <input type="file" id="videoInput" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
+                </div>
+                
+                <!-- พรีวิววิดีโอ -->
+                <div id="videoPreviewContainer" class="d-none text-center mt-3">
+                    <video id="videoPreview" width="100%" controls class="rounded border shadow-sm"></video>
+                    <p id="videoFileName" class="mt-2 text-muted small"></p>
+                </div>
+            </div>
+        </div>
 
-        <label>เลขพัสดุรับคืน (Tracking):</label>
-        <input type="text" id="tracking" placeholder="AI จะเติมให้อัตโนมัติ">
+        <!-- 3. รูปสินค้าด้านใน -->
+        <div class="card mb-4 shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h5 class="card-title fw-bold mb-3 text-secondary">3. รูปสินค้าด้านใน</h5>
+                
+                <div class="d-grid mb-3">
+                    <button type="button" class="btn btn-secondary py-2 fw-bold" onclick="document.getElementById('productInput').click()">
+                        <i class="bi bi-box-open"></i> เปิดกล้อง / เลือกรูป
+                    </button>
+                    <input type="file" id="productInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'product')">
+                </div>
+                
+                <div id="productPreviewContainer" class="d-none text-center mb-3">
+                    <img id="productPreview" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
+                </div>
 
-        <label>หมายเลขคำสั่งซื้อ (Order ID):</label>
-        <input type="text" id="orderId" placeholder="AI จะเติมให้อัตโนมัติ">
+                <!-- ฟอร์มข้อมูลสินค้า -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">ผลประเมินสภาพ (ถ้ามี):</label>
+                    <input type="text" id="aiCondition" class="form-control bg-light" placeholder="-">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">สถานะสินค้าขั้นสุดท้าย:</label>
+                    <select id="finalCondition" class="form-select border-primary fw-bold text-primary">
+                        <option value="สมบูรณ์ พร้อมขายต่อ">สมบูรณ์ พร้อมขายต่อ</option>
+                        <option value="กล่องบุบ/เสียหาย แต่สินค้าปกติ">กล่องบุบ/เสียหาย แต่สินค้าปกติ</option>
+                        <option value="สินค้าชำรุด/เสียหาย">สินค้าชำรุด/เสียหาย</option>
+                        <option value="สินค้าไม่ครบ/สูญหาย">สินค้าไม่ครบ/สูญหาย</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">หมายเหตุ (ถ้ามี):</label>
+                    <textarea id="notes" class="form-control" rows="2" placeholder="เช่น ลูกค้าแกะซีลแล้ว, ของแถมหาย..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ปุ่มบันทึกข้อมูล -->
+        <button id="submitBtn" class="btn btn-success w-100 py-3 mb-5 fw-bold fs-5 shadow" onclick="submitData()">
+            <i class="bi bi-cloud-arrow-up-fill"></i> บันทึกข้อมูลลงระบบ
+        </button>
     </div>
 
-    <!-- ส่วนที่ 2: ถ่ายรูป/อัปโหลด สินค้า -->
-    <div class="card">
-        <h3>2. รูปสินค้าด้านใน</h3>
-        <div class="btn-group">
-            <button class="btn-camera" id="startProductCam">📷 เปิดกล้อง</button>
-            <label class="btn-upload-label">
-                📂 เลือกรูป
-                <input type="file" id="uploadProductBtn" accept="image/*">
-            </label>
-        </div>
-        <video id="productVideo" autoplay playsinline></video>
-        <button class="btn-capture" id="captureProductBtn">📸 ถ่ายรูปและประเมินด้วย AI</button>
-        <img id="productPreview" alt="Product Preview">
-        <p class="status" id="productStatus"></p>
-
-        <label>ผลประเมินสภาพจาก AI:</label>
-        <textarea id="aiCondition" rows="2" readonly placeholder="AI จะช่วยประเมินสภาพเบื้องต้น"></textarea>
-
-        <label>สถานะสินค้าขั้นสุดท้าย (คุณยืนยัน):</label>
-        <select id="finalCondition">
-            <option value="สมบูรณ์ พร้อมขายต่อ">สมบูรณ์ พร้อมขายต่อ</option>
-            <option value="มีตำหนิ/แพ็กเกจพัง">มีตำหนิ/แพ็กเกจพัง</option>
-            <option value="สินค้าไม่ตรง/สูญหาย">สินค้าไม่ตรง/สูญหาย</option>
-        </select>
-
-        <label>หมายเหตุเพิ่มเติม:</label>
-        <textarea id="notes" rows="2" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
-    </div>
-
-    <button class="btn-submit" id="submitBtn">💾 บันทึกข้อมูลลงระบบ</button>
-    <p class="status" id="submitStatus"></p>
-    <canvas id="canvas"></canvas>
-
+    <!-- Javascript -->
     <script>
-        // --- นำ WEB APP URL มาใส่ตรงนี้ ---
+        // ⚠️ นำลิงก์ Web App (New Deployment) ของ Google Apps Script มาใส่ในเครื่องหมายคำพูดด้านล่างนี้ ⚠️
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyMY6DZH8DhBf2rLBcTnb15amHL0kHhj8oAdY9Mvo5sTUYoXQaGhoEV2-8LqTDd53ii/exec";
-        
+
+        // ตัวแปรเก็บข้อมูลไฟล์
         let boxImageBase64 = "";
         let productImageBase64 = "";
-        let currentStream = null;
+        let videoBase64Data = "";
+        let videoMimeType = "";
 
-        // --- ฟังก์ชันกล้อง ---
-        async function startCamera(videoElementId, captureBtnId, previewId) {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } });
-                document.getElementById(videoElementId).srcObject = stream;
-                document.getElementById(videoElementId).style.display = 'block';
-                document.getElementById(captureBtnId).style.display = 'block';
-                document.getElementById(previewId).style.display = 'none';
-                currentStream = stream;
-            } catch (err) {
-                alert("ไม่สามารถเปิดกล้องได้: " + err);
-            }
-        }
-
-        function captureImage(videoElementId, previewElementId) {
-            const video = document.getElementById(videoElementId);
-            const canvas = document.getElementById('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            const base64Full = canvas.toDataURL('image/jpeg', 0.8);
-            document.getElementById(previewElementId).src = base64Full;
-            document.getElementById(previewElementId).style.display = 'block';
-            video.style.display = 'none';
-            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-            return base64Full.split(',')[1];
-        }
-
-        function handleFileUpload(event, previewElementId, type) {
+        // ฟังก์ชันจัดการอัปโหลดรูปภาพพร้อมย่อขนาด (เพื่อลดภาระเซิร์ฟเวอร์)
+        function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
-            reader.onload = async function(e) {
-                const base64Full = e.target.result;
-                document.getElementById(previewElementId).src = base64Full;
-                document.getElementById(previewElementId).style.display = 'block';
-                if (currentStream) currentStream.getTracks().forEach(track => track.stop());
-                const base64Data = base64Full.split(',')[1];
-                
-                if (type === 'box') {
-                    boxImageBase64 = base64Data;
-                    document.getElementById('boxVideo').style.display = 'none';
-                    document.getElementById('captureBoxBtn').style.display = 'none';
-                    document.getElementById('boxStatus').innerText = "⏳ ระบบหลังบ้านกำลังอ่านข้อมูล...";
-                    document.getElementById('boxStatus').style.color = "#d32f2f";
-                    await analyzeLabel(boxImageBase64);
-                } else if (type === 'product') {
-                    productImageBase64 = base64Data;
-                    document.getElementById('productVideo').style.display = 'none';
-                    document.getElementById('captureProductBtn').style.display = 'none';
-                    document.getElementById('productStatus').innerText = "⏳ ระบบหลังบ้านกำลังประเมิน...";
-                    document.getElementById('productStatus').style.color = "#d32f2f";
-                    await analyzeCondition(productImageBase64);
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // ย่อขนาดความกว้าง
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // แปลงกลับเป็น Base64
+                    const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+                    const previewUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+                    if (type === 'box') {
+                        boxImageBase64 = base64;
+                        document.getElementById('boxPreview').src = previewUrl;
+                        document.getElementById('boxPreviewContainer').classList.remove('d-none');
+                        // ส่งไปให้ Google Drive OCR อ่านข้อความ
+                        analyzeBoxImage(base64);
+                    } else {
+                        productImageBase64 = base64;
+                        document.getElementById('productPreview').src = previewUrl;
+                        document.getElementById('productPreviewContainer').classList.remove('d-none');
+                    }
                 }
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        // --- ตั้งค่าปุ่มกดต่างๆ ---
-        document.getElementById('startBoxCam').addEventListener('click', () => startCamera('boxVideo', 'captureBoxBtn', 'boxPreview'));
-        document.getElementById('captureBoxBtn').addEventListener('click', async () => {
-            boxImageBase64 = captureImage('boxVideo', 'boxPreview');
-            document.getElementById('captureBoxBtn').style.display = 'none';
-            document.getElementById('boxStatus').innerText = "⏳ ระบบหลังบ้านกำลังอ่านข้อมูล...";
-            document.getElementById('boxStatus').style.color = "#d32f2f";
-            await analyzeLabel(boxImageBase64);
-        });
-        document.getElementById('uploadBoxBtn').addEventListener('change', (e) => handleFileUpload(e, 'boxPreview', 'box'));
+        // ฟังก์ชันจัดการอัปโหลดวิดีโอ
+        function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // แจ้งเตือนถ้าวิดีโอใหญ่กว่า 40MB
+            if (file.size > 40 * 1024 * 1024) {
+                alert("⚠️ วิดีโอมีขนาดใหญ่เกินไป (มากกว่า 40MB) อาจทำให้การบันทึกช้าลงมาก หรือระบบปฏิเสธการรับไฟล์ แนะนำให้ถ่ายเป็นคลิปสั้นๆ แทนครับ");
+            }
+            
+            // แสดงพรีวิววิดีโอ
+            const videoURL = URL.createObjectURL(file);
+            const videoPreview = document.getElementById('videoPreview');
+            videoPreview.src = videoURL;
+            document.getElementById('videoPreviewContainer').classList.remove('d-none');
+            document.getElementById('videoFileName').innerText = file.name + " (" + (file.size / (1024*1024)).toFixed(2) + " MB)";
+            
+            videoMimeType = file.type;
+            
+            // แปลงเป็น Base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                videoBase64Data = e.target.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        }
 
-        document.getElementById('startProductCam').addEventListener('click', () => startCamera('productVideo', 'captureProductBtn', 'productPreview'));
-        document.getElementById('captureProductBtn').addEventListener('click', async () => {
-            productImageBase64 = captureImage('productVideo', 'productPreview');
-            document.getElementById('captureProductBtn').style.display = 'none';
-            document.getElementById('productStatus').innerText = "⏳ ระบบหลังบ้านกำลังประเมิน...";
-            document.getElementById('productStatus').style.color = "#d32f2f";
-            await analyzeCondition(productImageBase64);
-        });
-        document.getElementById('uploadProductBtn').addEventListener('change', (e) => handleFileUpload(e, 'productPreview', 'product'));
+        // ฟังก์ชันส่งรูปให้ OCR วิเคราะห์
+        async function analyzeBoxImage(base64Data) {
+            document.getElementById('analyzeLoading').style.display = 'block';
+            document.getElementById('analyzeError').innerText = "";
+            
+            const payload = {
+                action: "analyze",
+                prompt: "label",
+                imageBase64: base64Data
+            };
 
-        // --- ส่งข้อมูลไปวิเคราะห์ที่ Google Apps Script ---
-        async function callAppsScript(payload) {
             try {
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload)
                 });
-                const data = await response.json();
-                if (data.status === "error") throw new Error(data.message);
-                return data;
-            } catch (error) {
-                throw new Error("ติดต่อฐานข้อมูลไม่ได้ (" + error.message + ")");
-            }
-        }
-
-        async function analyzeLabel(base64Image) {
-            try {
-                const prompt = "Extract data from this Thai shipping label. Return ONLY JSON format: {\"tracking\":\"...\", \"orderId\":\"...\", \"platform\":\"...\"}. Do not write any other text.";
-                const dataResponse = await callAppsScript({ action: "analyze", imageBase64: base64Image, prompt: prompt });
+                const result = await response.json();
                 
-                let resultText = dataResponse.text;
-                const startIndex = resultText.indexOf('{');
-                const endIndex = resultText.lastIndexOf('}') + 1;
-                if (startIndex === -1 || endIndex === 0) throw new Error("ข้อมูลผิดรูปแบบ: " + resultText);
-                
-                const data = JSON.parse(resultText.substring(startIndex, endIndex));
-                
-                if(data.tracking) document.getElementById('tracking').value = data.tracking;
-                if(data.orderId) document.getElementById('orderId').value = data.orderId;
-                if(data.platform) {
-                    const select = document.getElementById('platform');
-                    for (let i = 0; i < select.options.length; i++) {
-                        if (select.options[i].value.toLowerCase().includes(data.platform.toLowerCase())) {
-                            select.selectedIndex = i;
-                            break;
+                if (result.status === "success") {
+                    try {
+                        const data = JSON.parse(result.text);
+                        document.getElementById('tracking').value = data.tracking || "";
+                        document.getElementById('orderId').value = data.orderId || "";
+                        if (data.platform) {
+                            document.getElementById('platform').value = data.platform;
                         }
+                    } catch (e) {
+                        document.getElementById('analyzeError').innerText = "❌ ดึงข้อมูลสำเร็จ แต่รูปแบบไม่ถูกต้อง";
                     }
+                } else {
+                    document.getElementById('analyzeError').innerText = "❌ อ่านไม่สำเร็จ: " + result.message;
                 }
-                document.getElementById('boxStatus').innerText = "✅ ดึงข้อมูลสำเร็จ!";
-                document.getElementById('boxStatus').style.color = "green";
             } catch (error) {
-                document.getElementById('boxStatus').innerText = "❌ อ่านไม่สำเร็จ (" + error.message + ")";
-                document.getElementById('boxStatus').style.color = "#d32f2f";
+                document.getElementById('analyzeError').innerText = "❌ การเชื่อมต่อขัดข้อง กรุณาลองใหม่ หรือกรอกด้วยมือครับ";
+            } finally {
+                document.getElementById('analyzeLoading').style.display = 'none';
             }
         }
 
-        async function analyzeCondition(base64Image) {
-            try {
-                const prompt = "Analyze this product image. Briefly describe physical condition in Thai (e.g., กล่องบุบ, สมบูรณ์). Keep under 2 sentences.";
-                const dataResponse = await callAppsScript({ action: "analyze", imageBase64: base64Image, prompt: prompt });
-                document.getElementById('aiCondition').value = dataResponse.text.trim();
-                document.getElementById('productStatus').innerText = "✅ ประเมินสำเร็จ!";
-                document.getElementById('productStatus').style.color = "green";
-            } catch (error) {
-                document.getElementById('productStatus').innerText = "❌ ประเมินไม่ได้ (" + error.message + ")";
-                document.getElementById('productStatus').style.color = "#d32f2f";
-            }
-        }
-
-        // --- บันทึกข้อมูลลง Sheet ---
-        document.getElementById('submitBtn').addEventListener('click', async () => {
+        // ฟังก์ชันส่งข้อมูลทั้งหมดไปบันทึกลง Sheet
+        async function submitData() {
             const btn = document.getElementById('submitBtn');
-            const status = document.getElementById('submitStatus');
             
-            if(!boxImageBase64 || !productImageBase64) {
-                alert("กรุณาใส่รูปทั้งหน้ากล่องและสินค้าด้านในให้ครบ");
+            // บังคับให้ต้องถ่ายใบปะหน้าเป็นอย่างน้อย
+            if (!boxImageBase64) {
+                alert("กรุณาอัปโหลดรูป 'ใบปะหน้ากล่อง' เป็นอย่างน้อยครับ");
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = "กำลังบันทึกข้อมูล...";
-            status.innerText = "";
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดข้อมูล (อาจใช้เวลา 1-2 นาที หากมีไฟล์วิดีโอ)...';
 
             const payload = {
                 action: "submit",
                 platform: document.getElementById('platform').value,
                 tracking: document.getElementById('tracking').value,
                 orderId: document.getElementById('orderId').value,
+                boxImageBase64: boxImageBase64,
+                productImageBase64: productImageBase64,
+                videoBase64Data: videoBase64Data, // แนบข้อมูลวิดีโอไป
+                videoMimeType: videoMimeType,
                 aiCondition: document.getElementById('aiCondition').value,
                 finalCondition: document.getElementById('finalCondition').value,
-                notes: document.getElementById('notes').value,
-                boxImageBase64: boxImageBase64,
-                productImageBase64: productImageBase64
+                notes: document.getElementById('notes').value
             };
 
             try {
-                const result = await callAppsScript(payload);
-                status.style.color = "green";
-                status.innerText = "🎉 บันทึกข้อมูลลงระบบเรียบร้อย!";
-                setTimeout(() => location.reload(), 2000);
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว!");
+                    window.location.reload(); // รีเฟรชหน้าเว็บเคลียร์ฟอร์ม
+                } else {
+                    alert("❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: " + result.message);
+                    resetSubmitButton(btn);
+                }
             } catch (error) {
-                status.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
-                btn.disabled = false;
-                btn.innerText = "💾 บันทึกข้อมูลลงระบบ";
+                alert("❌ การเชื่อมต่อขัดข้อง: " + error.message);
+                resetSubmitButton(btn);
             }
-        });
+        }
+
+        function resetSubmitButton(btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> บันทึกข้อมูลลงระบบ';
+        }
     </script>
 </body>
 </html>
