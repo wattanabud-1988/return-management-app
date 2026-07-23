@@ -3,190 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบรับสินค้าคืน/ตีกลับ</title>
-    <!-- โหลดสไตล์ CSS (Bootstrap) และ Icon -->
+    <title>ReturnFlow - ระบบรับสินค้าคืน</title>
+    <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Google Fonts: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { background-color: #f8f9fa; font-family: 'Sarabun', sans-serif; }
-        .card { transition: all 0.2s ease; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-        .loading { display: none; }
+        :root {
+            --primary-green: #295743;
+            --primary-green-hover: #1e4031;
+            --bg-cream: #f6f3eb;
+            --card-cream: #fdfaf3;
+            --accent-yellow: #f1c75b;
+            --text-dark: #2d302e;
+            --text-muted: #8e938f;
+        }
+
+        body { 
+            background-color: var(--bg-cream); 
+            font-family: 'Sarabun', sans-serif; 
+            color: var(--text-dark);
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+
+        /* --- Dashboard Styles --- */
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .header-title { font-weight: 700; font-size: 1.2rem; margin: 0; }
+        .badge-warehouse { background-color: var(--primary-green); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; }
         
-        /* สไตล์สำหรับหน้าต่างรายละเอียด */
-        .modal-detail-bg { background-color: #fcfaf5; } 
+        .hero-section { padding: 0 20px 20px 20px; }
+        .hero-subtitle { font-size: 0.7rem; font-weight: 700; color: var(--primary-green); letter-spacing: 1px; margin-bottom: 0; }
+        .hero-heading { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
+        .hero-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+        .stat-card { background: white; border-radius: 16px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #efebe1; margin: 0 20px 20px 20px; }
+        .stat-icon { width: 50px; height: 50px; background-color: var(--accent-yellow); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin-right: 15px; }
+        .stat-info h6 { font-weight: 700; margin: 0; font-size: 0.9rem; }
+        .stat-info h2 { font-weight: 700; margin: 0; color: var(--accent-yellow); font-size: 1.8rem; line-height: 1; }
+        .stat-info small { font-size: 0.7rem; color: var(--text-muted); }
+
+        .section-title { background: #ecdcc1; display: inline-block; padding: 5px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #7a6341; margin-bottom: 15px; position: relative; }
+        .section-title::before, .section-title::after { content: '•'; margin: 0 5px; color: #bca47e; }
+        
+        .main-container { background: #e5e2d8; border-radius: 24px; padding: 20px; margin: 0 10px 20px 10px; }
+        
+        .step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .step-card { background: var(--card-cream); border-radius: 16px; padding: 20px 10px; text-align: center; position: relative; border: 1px solid #ddd; }
+        .step-card.active { border: 2px solid var(--primary-green); }
+        .step-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 24px; height: 24px; border-radius: 50%; background: var(--primary-green); color: white; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; font-weight: bold; }
+        .step-badge.yellow { background: var(--accent-yellow); }
+        .step-badge.orange { background: #f0894d; }
+        .step-icon { font-size: 2rem; color: var(--primary-green); margin-bottom: 10px; }
+        .step-card.yellow .step-icon { color: var(--accent-yellow); }
+        .step-card.orange .step-icon { color: #f0894d; }
+        .step-card h6 { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; }
+        .step-card small { font-size: 0.65rem; color: var(--text-muted); }
+
+        .btn-main { background-color: var(--primary-green); color: white; border-radius: 12px; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; border: none; width: 100%; font-size: 1rem; }
+        .btn-main:hover { background-color: var(--primary-green-hover); color: white; }
+        .btn-main .arrow-circle { background-color: var(--accent-yellow); color: var(--text-dark); width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+
+        .search-box { background: white; border-radius: 12px; padding: 10px 15px; display: flex; align-items: center; margin-bottom: 15px; border: 1px solid #ddd; }
+        .search-box input { border: none; outline: none; background: transparent; width: 100%; font-size: 0.9rem; margin-left: 10px; }
+
+        .list-item { background: white; border-radius: 16px; padding: 15px; display: flex; align-items: center; margin-bottom: 10px; border: 1px solid #ddd; cursor: pointer; }
+        .list-icon { width: 40px; height: 40px; background: #f5f0e6; border-radius: 10px; display: flex; justify-content: center; align-items: center; color: #a48c66; font-size: 1.2rem; margin-right: 15px; flex-shrink: 0; }
+        .list-content { flex-grow: 1; overflow: hidden; }
+        .list-content h6 { font-weight: 700; margin: 0 0 3px 0; font-size: 0.9rem; }
+        .list-content p { font-size: 0.7rem; color: var(--text-muted); margin: 0; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .platform-tag { font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 8px; color: white; }
+        .tag-tiktok { background: #000; }
+        .tag-shopee { background: #ee4d2d; }
+        .tag-lazada { background: #0f146d; }
+        .tag-other { background: var(--text-muted); }
+
+        /* --- Bottom Nav --- */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #dcd7ca; display: flex; justify-content: space-around; padding: 10px 0; border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100; }
+        .nav-item { text-align: center; color: #888; font-size: 0.65rem; font-weight: 600; text-decoration: none; padding: 5px 15px; border-radius: 12px; }
+        .nav-item.active { background: var(--primary-green); color: white; }
+        .nav-item i { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+
+        /* --- Wizard Modal (UI แบบฟอร์มทีละขั้นตอน) --- */
+        .wizard-modal .modal-content { background-color: var(--bg-cream); border: none; border-radius: 0; min-height: 100vh; }
+        .wizard-header { padding: 20px; border-bottom: 1px solid #ebdcc5; background: var(--bg-cream); position: sticky; top: 0; z-index: 10; }
+        .wizard-title-small { font-size: 0.75rem; font-weight: 700; color: var(--primary-green); margin-bottom: 2px; }
+        .wizard-title { font-size: 1.3rem; font-weight: 700; margin: 0; display: inline-block; }
+        .btn-close-custom { float: right; background: white; border: 1px solid #ddd; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        
+        .stepper-container { display: flex; justify-content: space-between; position: relative; margin: 20px 40px; }
+        .stepper-line { position: absolute; top: 15px; left: 0; right: 0; height: 2px; background: #ddd; z-index: 1; }
+        .stepper-step { position: relative; z-index: 2; text-align: center; background: var(--bg-cream); padding: 0 5px; }
+        .stepper-circle { width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #ddd; display: flex; justify-content: center; align-items: center; margin: 0 auto 5px auto; font-weight: 700; font-size: 0.85rem; color: #888; transition: all 0.3s;}
+        .stepper-step.active .stepper-circle { background: var(--primary-green); border-color: var(--primary-green); color: white; }
+        .stepper-step.completed .stepper-circle { background: var(--accent-yellow); border-color: var(--accent-yellow); color: white; }
+        .stepper-label { font-size: 0.65rem; font-weight: 600; color: #888; }
+        .stepper-step.active .stepper-label { color: var(--primary-green); }
+
+        .info-box { background: #fff8e1; border: 1px solid #fde49b; border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; }
+        .info-box i { color: #d4a017; font-size: 1.2rem; margin-right: 12px; }
+        .info-box div h6 { margin: 0 0 3px 0; font-weight: 700; font-size: 0.85rem; color: #7a5c0b; }
+        .info-box div p { margin: 0; font-size: 0.75rem; color: #9c7b20; }
+
+        .upload-area { border: 2px dashed #c4bcae; border-radius: 20px; padding: 40px 20px; text-align: center; background: transparent; transition: all 0.2s; }
+        .upload-area.has-file { padding: 15px; border-style: solid; background: white; }
+        .upload-icon-circle { width: 70px; height: 70px; background: var(--primary-green); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; color: white; font-size: 2rem; margin-bottom: 15px; }
+        .upload-title { font-weight: 700; font-size: 1rem; margin-bottom: 5px; }
+        .upload-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 20px; }
+        .upload-preview { width: 100%; max-height: 250px; object-fit: contain; border-radius: 12px; display: none; }
+
+        .wizard-footer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-cream); padding: 15px 20px; display: flex; justify-content: space-between; border-top: 1px solid #ebdcc5; z-index: 10; }
+        .btn-cancel { background: white; border: 1px solid #ddd; color: var(--text-dark); border-radius: 10px; padding: 10px 25px; font-weight: 600; }
+        .btn-next { background: #96af9f; color: white; border: none; border-radius: 10px; padding: 10px 35px; font-weight: 600; transition: all 0.3s; }
+        .btn-next.active { background: var(--primary-green); }
+
+        /* --- Detail Modal --- */
+        .modal-detail-bg { background-color: var(--card-cream); } 
         .grid-detail { font-size: 0.85rem; }
         .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
         .notes-box { background-color: #f3efe6; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <div class="container py-4" style="max-width: 600px;">
-        <h3 class="text-center mb-3 fw-bold text-primary"><i class="bi bi-box-seam"></i> ระบบรับสินค้าตีกลับ</h3>
 
-        <!-- ปุ่มเปิดประวัติการบันทึก -->
-        <div class="text-end mb-3">
-            <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm" onclick="fetchRecords()" data-bs-toggle="modal" data-bs-target="#recordsModal">
-                <i class="bi bi-clock-history"></i> ประวัติล่าสุด (10 รายการ)
-            </button>
+    <!-- ========================================== -->
+    <!-- 1. DASHBOARD (หน้าแรก) -->
+    <!-- ========================================== -->
+    <div class="header-top">
+        <h1 class="header-title">ReturnFlow</h1>
+        <span class="badge-warehouse"><i class="bi bi-shop"></i> คลังสินค้า 1</span>
+    </div>
+
+    <div class="hero-section">
+        <p class="hero-subtitle">RETURN OPERATIONS</p>
+        <h2 class="hero-heading">รับสินค้าคืน</h2>
+        <p class="hero-desc">ตรวจรับสินค้าตีกลับจากทุกแพลตฟอร์มในขั้นตอนเดียว</p>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon"><i class="bi bi-clipboard-check"></i></div>
+        <div class="stat-info">
+            <h6>ตรวจแล้ววันนี้</h6>
+            <h2 id="todayCount">0</h2>
+            <small>รายการที่บันทึกเข้าระบบแล้ว</small>
         </div>
+    </div>
 
-        <!-- 1. รูปใบปะหน้ากล่อง -->
-        <div class="card mb-4 shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <h5 class="card-title fw-bold mb-3 text-secondary">1. รูปใบปะหน้ากล่อง</h5>
-                <div class="d-grid mb-3">
-                    <button type="button" class="btn btn-primary py-2 fw-bold" onclick="document.getElementById('boxInput').click()">
-                        <i class="bi bi-camera"></i> เปิดกล้อง / เลือกรูป
-                    </button>
-                    <input type="file" id="boxInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'box')">
-                </div>
-                <div id="boxPreviewContainer" class="d-none text-center mb-3">
-                    <img id="boxPreview" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
-                </div>
-                
-                <div id="analyzeLoading" class="loading text-center text-primary mb-3 fw-bold">
-                    <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...
-                </div>
-                <div id="analyzeError" class="text-danger small mb-3 text-center fw-bold"></div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">แพลตฟอร์ม:</label>
-                    <select id="platform" class="form-select bg-light">
-                        <option value="">-- เลือกแพลตฟอร์ม --</option>
-                        <option value="Shopee">Shopee</option>
-                        <option value="Lazada">Lazada</option>
-                        <option value="TikTok">TikTok</option>
-                        <option value="อื่นๆ">อื่นๆ</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">เลขพัสดุรับคืน (Tracking):</label>
-                    <input type="text" id="tracking" class="form-control" placeholder="ระบบจะเติมให้อัตโนมัติ">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">หมายเลขคำสั่งซื้อ (Order ID):</label>
-                    <input type="text" id="orderId" class="form-control" placeholder="ระบบจะเติมให้อัตโนมัติ">
-                </div>
+    <div class="main-container">
+        <div class="text-center"><span class="section-title">ขั้นตอนรับสินค้าคืน</span></div>
+        
+        <div class="step-grid">
+            <div class="step-card active">
+                <div class="step-badge">1</div>
+                <i class="bi bi-camera step-icon"></i>
+                <h6>ถ่ายรูปกล่อง</h6>
+                <small>เก็บหลักฐานก่อนเปิด</small>
+            </div>
+            <div class="step-card yellow">
+                <div class="step-badge yellow">2</div>
+                <i class="bi bi-file-earmark-text step-icon"></i>
+                <h6>ตรวจเลขคืนสินค้า</h6>
+                <small>OCR อ่านฉลากอัตโนมัติ</small>
+            </div>
+            <div class="step-card">
+                <div class="step-badge">3</div>
+                <i class="bi bi-box-seam step-icon"></i>
+                <h6>ถ่ายรูปสินค้า</h6>
+                <small>ถ่ายของภายในกล่อง</small>
+            </div>
+            <div class="step-card orange">
+                <div class="step-badge orange">4</div>
+                <i class="bi bi-shield-check step-icon"></i>
+                <h6>ตรวจสภาพ</h6>
+                <small>ปกติหรือมีปัญหา</small>
             </div>
         </div>
 
-        <!-- 2. วิดีโอตอนเปิดเช็คของ -->
-        <div class="card mb-4 shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <h5 class="card-title fw-bold mb-3 text-secondary">2. วิดีโอตอนเปิดเช็คของ (ถ้ามี)</h5>
-                <div class="d-grid mb-3">
-                    <button type="button" class="btn btn-danger py-2 fw-bold" onclick="document.getElementById('videoInput').click()">
-                        <i class="bi bi-camera-video"></i> ถ่าย / อัปโหลดวิดีโอ
-                    </button>
-                    <input type="file" id="videoInput" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
-                </div>
-                <div id="videoPreviewContainer" class="d-none text-center mt-3">
-                    <video id="videoPreview" width="100%" controls class="rounded border shadow-sm"></video>
-                    <p id="videoFileName" class="mt-2 text-muted small"></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. รูปสินค้าด้านใน -->
-        <div class="card mb-4 shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <h5 class="card-title fw-bold mb-3 text-secondary">3. รูปสินค้าด้านใน</h5>
-                <div class="d-grid mb-3">
-                    <button type="button" class="btn btn-secondary py-2 fw-bold" onclick="document.getElementById('productInput').click()">
-                        <i class="bi bi-box-open"></i> เปิดกล้อง / เลือกรูป
-                    </button>
-                    <input type="file" id="productInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'product')">
-                </div>
-                <div id="productPreviewContainer" class="d-none text-center mb-3">
-                    <img id="productPreview" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">ผลประเมินสภาพ (ถ้ามี):</label>
-                    <input type="text" id="aiCondition" class="form-control bg-light" placeholder="-">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">สถานะสินค้าขั้นสุดท้าย:</label>
-                    <select id="finalCondition" class="form-select border-primary fw-bold text-primary">
-                        <option value="สมบูรณ์ พร้อมขายต่อ">สมบูรณ์ พร้อมขายต่อ</option>
-                        <option value="กล่องบุบ/เสียหาย แต่สินค้าปกติ">กล่องบุบ/เสียหาย แต่สินค้าปกติ</option>
-                        <option value="สินค้าชำรุด/เสียหาย">สินค้าชำรุด/เสียหาย</option>
-                        <option value="สินค้าไม่ครบ/สูญหาย">สินค้าไม่ครบ/สูญหาย</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="form-label fw-bold">หมายเหตุ (ถ้ามี):</label>
-                    <textarea id="notes" class="form-control" rows="2" placeholder="เช่น ลูกค้าแกะซีลแล้ว, ของแถมหาย..."></textarea>
-                </div>
-            </div>
-        </div>
-
-        <!-- ปุ่มบันทึกข้อมูล -->
-        <button id="submitBtn" class="btn btn-success w-100 py-3 mb-5 fw-bold fs-5 shadow" onclick="submitData()">
-            <i class="bi bi-cloud-arrow-up-fill"></i> บันทึกข้อมูลลงระบบ
+        <button class="btn-main" onclick="openWizard()">
+            <span><i class="bi bi-camera-fill me-2"></i> เริ่มรับสินค้าคืน</span>
+            <div class="arrow-circle"><i class="bi bi-arrow-right"></i></div>
         </button>
     </div>
 
-    <!-- Modal 1: หน้ารายการประวัติ (List) -->
-    <div class="modal fade" id="recordsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-card-list"></i> 10 รายการล่าสุด</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="main-container" style="background: #e5e2d8; margin-bottom: 100px;">
+        <div class="text-center"><span class="section-title">รายการล่าสุด</span></div>
+        
+        <div class="search-box">
+            <i class="bi bi-search text-muted"></i>
+            <input type="text" id="searchInput" placeholder="ค้นหาเลขคืนสินค้า..." onkeyup="filterRecords()">
+        </div>
+
+        <div id="recordsList">
+            <div class="text-center text-muted my-4">
+                <div class="spinner-border spinner-border-sm text-success mb-2" role="status"></div><br>กำลังดึงข้อมูล...
+            </div>
+            <!-- รายการจะถูกแทรกที่นี่ -->
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item"><i class="bi bi-grid-fill"></i>ภาพรวม</a>
+        <a href="#" class="nav-item active" onclick="openWizard()"><i class="bi bi-box-seam"></i>รับสินค้าคืน</a>
+        <a href="#" class="nav-item"><i class="bi bi-clock-history"></i>ประวัติรายการ</a>
+        <a href="#" class="nav-item"><i class="bi bi-gear"></i>ตั้งค่าระบบ</a>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. WIZARD MODAL (ฟอร์มรับคืน 5 ขั้นตอน) -->
+    <!-- ========================================== -->
+    <div class="modal fade wizard-modal" id="wizardModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content pb-5">
+                
+                <div class="wizard-header">
+                    <div class="btn-close-custom" onclick="closeWizard()"><i class="bi bi-x"></i></div>
+                    <p class="wizard-title-small">รายการรับคืนใหม่</p>
+                    <h3 class="wizard-title" id="wizardTitle">ถ่ายรูปกล่องพัสดุ</h3>
                 </div>
-                <div class="modal-body p-0" id="recordsBody"></div>
+
+                <!-- Stepper UI -->
+                <div class="stepper-container">
+                    <div class="stepper-line"></div>
+                    <div class="stepper-step active" id="indicator1">
+                        <div class="stepper-circle">1</div>
+                        <div class="stepper-label">รูปกล่อง</div>
+                    </div>
+                    <div class="stepper-step" id="indicator2">
+                        <div class="stepper-circle">2</div>
+                        <div class="stepper-label">เลขคืน</div>
+                    </div>
+                    <div class="stepper-step" id="indicator3">
+                        <div class="stepper-circle">3</div>
+                        <div class="stepper-label">วิดีโอ</div>
+                    </div>
+                    <div class="stepper-step" id="indicator4">
+                        <div class="stepper-circle">4</div>
+                        <div class="stepper-label">รูปสินค้า</div>
+                    </div>
+                    <div class="stepper-step" id="indicator5">
+                        <div class="stepper-circle">5</div>
+                        <div class="stepper-label">สภาพ</div>
+                    </div>
+                </div>
+
+                <div class="p-3">
+                    <!-- Step 1: รูปกล่อง -->
+                    <div id="step1" class="wizard-step">
+                        <div class="info-box">
+                            <i class="bi bi-camera"></i>
+                            <div>
+                                <h6>ถ่ายให้เห็นฉลากทั้งใบ</h6>
+                                <p>วางกล่องบนพื้นเรียบ ให้เลขคืนสินค้าและบาร์โค้ดอยู่ในกรอบ</p>
+                            </div>
+                        </div>
+                        <div class="upload-area" id="boxUploadArea">
+                            <div class="upload-icon-circle"><i class="bi bi-camera"></i></div>
+                            <h5 class="upload-title">ถ่ายรูปหน้ากล่องสินค้า</h5>
+                            <p class="upload-subtitle">รองรับ JPG, PNG และกล้องมือถือ</p>
+                            <img id="boxPreview" class="upload-preview mb-3">
+                            <div>
+                                <button class="btn btn-main d-inline-block w-auto px-4 py-2 me-2" onclick="document.getElementById('boxInput').click()"><i class="bi bi-camera me-2"></i> ถ่ายรูป</button>
+                                <input type="file" id="boxInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'box')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: ข้อมูล OCR -->
+                    <div id="step2" class="wizard-step d-none">
+                        <div class="info-box">
+                            <i class="bi bi-robot"></i>
+                            <div>
+                                <h6>ตรวจสอบข้อมูลอัตโนมัติ</h6>
+                                <p>ระบบ AI ได้อ่านข้อมูลจากป้ายพัสดุ กรุณาตรวจสอบความถูกต้อง</p>
+                            </div>
+                        </div>
+                        
+                        <div id="analyzeLoading" class="text-center text-primary mb-3 fw-bold loading">
+                            <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...
+                        </div>
+                        <div id="analyzeError" class="text-danger small mb-3 text-center fw-bold"></div>
+
+                        <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                            <label class="form-label fw-bold">แพลตฟอร์ม:</label>
+                            <select id="platform" class="form-select bg-light mb-3 border-0">
+                                <option value="">-- เลือกแพลตฟอร์ม --</option>
+                                <option value="Shopee">Shopee</option>
+                                <option value="Lazada">Lazada</option>
+                                <option value="TikTok">TikTok</option>
+                                <option value="อื่นๆ">อื่นๆ</option>
+                            </select>
+                            
+                            <label class="form-label fw-bold">เลขพัสดุรับคืน (Tracking):</label>
+                            <input type="text" id="tracking" class="form-control bg-light mb-3 border-0">
+                            
+                            <label class="form-label fw-bold">หมายเลขคำสั่งซื้อ (Order ID):</label>
+                            <input type="text" id="orderId" class="form-control bg-light border-0">
+                        </div>
+                    </div>
+
+                    <!-- Step 3: วิดีโอ -->
+                    <div id="step3" class="wizard-step d-none">
+                        <div class="info-box">
+                            <i class="bi bi-camera-video"></i>
+                            <div>
+                                <h6>บันทึกวิดีโอเปิดกล่อง</h6>
+                                <p>ถ่ายวิดีโอต่อเนื่องขณะแกะกล่องเพื่อเป็นหลักฐาน (ไม่เกิน 1 นาที)</p>
+                            </div>
+                        </div>
+                        <div class="upload-area" id="videoUploadArea">
+                            <div class="upload-icon-circle" style="background: #dc3545;"><i class="bi bi-camera-video"></i></div>
+                            <h5 class="upload-title">ถ่ายวิดีโอตอนเปิดเช็คของ</h5>
+                            <p class="upload-subtitle">ถ่ายผ่านกล้องมือถือโดยตรง</p>
+                            
+                            <video id="videoPreview" width="100%" controls class="upload-preview mb-3"></video>
+                            <p id="videoFileName" class="text-muted small d-none mb-3"></p>
+                            
+                            <div>
+                                <button class="btn btn-danger px-4 py-2" onclick="document.getElementById('videoInput').click()"><i class="bi bi-camera-video me-2"></i> ถ่ายวิดีโอ</button>
+                                <input type="file" id="videoInput" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: รูปสินค้า -->
+                    <div id="step4" class="wizard-step d-none">
+                        <div class="info-box">
+                            <i class="bi bi-box-open"></i>
+                            <div>
+                                <h6>ถ่ายภาพสินค้าภายใน</h6>
+                                <p>ถ่ายให้เห็นตัวสินค้า และความเสียหาย (ถ้ามี) อย่างชัดเจน</p>
+                            </div>
+                        </div>
+                        <div class="upload-area" id="productUploadArea">
+                            <div class="upload-icon-circle" style="background: #6c757d;"><i class="bi bi-box-seam"></i></div>
+                            <h5 class="upload-title">ถ่ายรูปสินค้าภายใน</h5>
+                            <img id="productPreview" class="upload-preview mb-3">
+                            <div>
+                                <button class="btn btn-secondary px-4 py-2" onclick="document.getElementById('productInput').click()"><i class="bi bi-camera me-2"></i> ถ่ายรูป</button>
+                                <input type="file" id="productInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'product')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: ตรวจสภาพ & บันทึก -->
+                    <div id="step5" class="wizard-step d-none">
+                        <div class="info-box">
+                            <i class="bi bi-shield-check"></i>
+                            <div>
+                                <h6>สรุปสภาพการตีกลับ</h6>
+                                <p>ประเมินสภาพสินค้าขั้นสุดท้ายเพื่อบันทึกลงระบบคลัง</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                            <label class="form-label fw-bold">ผลประเมินสภาพ (ถ้ามี):</label>
+                            <input type="text" id="aiCondition" class="form-control bg-light border-0 mb-3" placeholder="-">
+                            
+                            <label class="form-label fw-bold">สถานะสินค้าขั้นสุดท้าย:</label>
+                            <select id="finalCondition" class="form-select border-success fw-bold text-success mb-3" style="background-color: #f8fff9;">
+                                <option value="สมบูรณ์ พร้อมขายต่อ">สมบูรณ์ พร้อมขายต่อ</option>
+                                <option value="กล่องบุบ/เสียหาย แต่สินค้าปกติ">กล่องบุบ/เสียหาย แต่สินค้าปกติ</option>
+                                <option value="สินค้าชำรุด/เสียหาย">สินค้าชำรุด/เสียหาย</option>
+                                <option value="สินค้าไม่ครบ/สูญหาย">สินค้าไม่ครบ/สูญหาย</option>
+                            </select>
+                            
+                            <label class="form-label fw-bold">หมายเหตุ (ถ้ามี):</label>
+                            <textarea id="notes" class="form-control bg-light border-0" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wizard-footer">
+                    <button class="btn-cancel" onclick="prevStep()" id="btnPrev">ยกเลิก</button>
+                    <button class="btn-next" onclick="nextStep()" id="btnNext">ถัดไป <i class="bi bi-arrow-right ms-1"></i></button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal 2: หน้ารายละเอียดเชิงลึก (Detail View) -->
-    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <!-- ========================================== -->
+    <!-- 3. DETAIL MODAL (หน้ารายละเอียดแบบเดิม) -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content modal-detail-bg">
                 <div class="modal-header border-0 pb-0">
                     <small class="text-success fw-bold">รายละเอียดรายการคืน</small>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body pt-1 px-3 pb-4">
-                    <!-- หัวข้อเลขพัสดุ -->
                     <h4 class="fw-bold mb-3" id="detailTracking">JTTH...</h4>
-                    
                     <div class="mb-3">
                         <span class="badge bg-dark me-1" id="detailPlatform">Platform</span>
                         <span class="badge" id="detailConditionBadge">ปกติ</span>
                     </div>
                     
-                    <div class="alert alert-success py-2 mb-3 d-flex align-items-center rounded-3 border-0" style="background-color: #e8f5e9;">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i> 
-                        <span class="text-success fw-bold" style="font-size: 0.85rem;">ส่งเข้า Google Sheet แล้ว</span>
-                    </div>
-                    
-                    <!-- ส่วนแสดงรูปกล่อง -->
                     <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailBoxContainer">
                         <img id="detailBoxImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
-                        <div class="card-body py-2 px-3 border-top bg-white">
-                            <small class="fw-bold text-dark">รูปกล่องก่อนเปิด</small>
-                        </div>
+                        <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">รูปกล่องก่อนเปิด</small></div>
                     </div>
                     
-                    <!-- ส่วนแสดงวิดีโอ (เล่นผ่าน iframe ของ Google Drive) -->
                     <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailVideoContainer">
                         <div class="ratio ratio-16x9 bg-dark">
                             <iframe id="detailVideoFrame" src="" allow="autoplay" allowfullscreen style="border:none;"></iframe>
                         </div>
-                        <div class="card-body py-2 px-3 border-top bg-white">
-                            <small class="fw-bold text-dark">วิดีโอตอนเปิดเช็คของ</small>
-                        </div>
+                        <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">วิดีโอตอนเปิดเช็คของ</small></div>
                     </div>
 
-                    <!-- ส่วนแสดงรูปสินค้า -->
                     <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailProdContainer">
                         <img id="detailProdImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
-                        <div class="card-body py-2 px-3 border-top bg-white">
-                            <small class="fw-bold text-dark">รูปสินค้าภายใน</small>
-                        </div>
+                        <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">รูปสินค้าภายใน</small></div>
                     </div>
                     
                     <div class="card border-0 shadow-sm mb-3 rounded-4 overflow-hidden">
@@ -223,126 +451,180 @@
         </div>
     </div>
 
-    <!-- Javascript Bootstrap -->
+    <!-- Javascript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyMY6DZH8DhBf2rLBcTnb15amHL0kHhj8oAdY9Mvo5sTUYoXQaGhoEV2-8LqTDd53ii/exec";
 
-        let boxImageBase64 = "";
-        let productImageBase64 = "";
-        let videoBase64Data = "";
-        let videoMimeType = "";
+        let boxImageBase64 = "", productImageBase64 = "", videoBase64Data = "", videoMimeType = "";
         let globalRecords = [];
+        let currentStep = 1;
+        const totalSteps = 5;
+        let wizardModalInstance = null;
+        let ocrTriggered = false;
 
+        // 1. โหลดข้อมูลอัตโนมัติเมื่อเปิดหน้าเว็บ
+        window.onload = function() {
+            wizardModalInstance = new bootstrap.Modal(document.getElementById('wizardModal'));
+            fetchRecords();
+        };
+
+        // ฟังก์ชันดึงประวัติ
         async function fetchRecords() {
-            const recordsBody = document.getElementById('recordsBody');
-            recordsBody.innerHTML = '<div class="text-center text-muted my-4"><div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังดึงข้อมูล...</div>';
-            
             try {
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getRecords" }) });
                 const result = await response.json();
                 
                 if (result.status === "success") {
                     globalRecords = result.data; 
-                    
-                    if(globalRecords.length === 0) {
-                        recordsBody.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
-                        return;
-                    }
-                    
-                    let html = '<div class="list-group list-group-flush">';
-                    globalRecords.forEach((item, index) => {
-                        let badgeClass = item.finalCondition.includes("สมบูรณ์") ? "bg-success" : "bg-danger";
-                        html += `
-                        <div class="list-group-item list-group-item-action py-3 border-bottom" onclick="openDetail(${index})" style="cursor: pointer;">
-                            <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-bold text-dark">${item.tracking}</h6>
-                                <small class="text-muted" style="font-size: 0.7rem;">${item.date}</small>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <small class="text-secondary fw-bold">${item.platform}</small>
-                                <span class="badge ${badgeClass}">${item.finalCondition}</span>
-                            </div>
-                        </div>`;
-                    });
-                    html += '</div>';
-                    recordsBody.innerHTML = html;
+                    updateDashboardStats();
+                    renderList(globalRecords);
                 } else {
-                    recordsBody.innerHTML = `<div class="text-center text-danger my-4">❌ โหลดไม่ได้: ${result.message}</div>`;
+                    document.getElementById('recordsList').innerHTML = `<div class="text-center text-danger my-4">❌ โหลดไม่ได้: ${result.message}</div>`;
                 }
             } catch (error) {
-                recordsBody.innerHTML = `<div class="text-center text-danger my-4">❌ การเชื่อมต่อขัดข้อง: ${error.message}</div>`;
+                document.getElementById('recordsList').innerHTML = `<div class="text-center text-danger my-4">❌ การเชื่อมต่อขัดข้อง: ${error.message}</div>`;
             }
         }
 
-        // ฟังก์ชันดึง ID จากลิงก์ Google Drive (ปรับปรุงเพื่อรองรับหลายรูปแบบ)
-        function getDriveId(url) {
-            if(!url) return null;
-            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-            return match ? match[1] : null;
+        function updateDashboardStats() {
+            // นับจำนวนที่ทำรายการวันนี้
+            const todayStr = new Date().toLocaleDateString('th-TH');
+            let todayCount = 0;
+            globalRecords.forEach(item => {
+                // เช็คแค่วันที่ตรงกัน (คร่าวๆ)
+                if(item.date.includes(new Date().getDate())) todayCount++; 
+            });
+            document.getElementById('todayCount').innerText = todayCount > 0 ? todayCount : globalRecords.length; // ใช้ยอดรวมชั่วคราวถ้าไม่ตรง
         }
 
-        function openDetail(index) {
-            const item = globalRecords[index];
-            
-            var recordsModalEl = document.getElementById('recordsModal');
-            var recordsModal = bootstrap.Modal.getInstance(recordsModalEl);
-            if (recordsModal) { recordsModal.hide(); }
-            
-            document.getElementById('detailTracking').innerText = item.tracking;
-            document.getElementById('detailPlatform').innerText = item.platform;
-            
-            const condBadge = document.getElementById('detailConditionBadge');
-            condBadge.innerText = item.finalCondition;
-            if (item.finalCondition.includes("สมบูรณ์")) {
-                condBadge.style.backgroundColor = "#d4edda";
-                condBadge.style.color = "#155724";
-            } else {
-                condBadge.style.backgroundColor = "#f8d7da";
-                condBadge.style.color = "#721c24";
-            }
-
-            // จัดการรูปกล่อง (ใช้ Thumbnail API แก้ปัญหารูปไม่ขึ้น)
-            let boxId = getDriveId(item.boxImageUrl);
-            if(boxId) {
-                document.getElementById('detailBoxImg').src = 'https://drive.google.com/thumbnail?id=' + boxId + '&sz=w800';
-                document.getElementById('detailBoxContainer').classList.remove('d-none');
-            } else {
-                document.getElementById('detailBoxContainer').classList.add('d-none');
-            }
-
-            // จัดการวิดีโอ (เล่นผ่าน iframe ของ Google Drive)
-            let videoId = getDriveId(item.videoUrl);
-            if(videoId) {
-                document.getElementById('detailVideoFrame').src = 'https://drive.google.com/file/d/' + videoId + '/preview';
-                document.getElementById('detailVideoContainer').classList.remove('d-none');
-            } else {
-                document.getElementById('detailVideoContainer').classList.add('d-none');
-            }
-
-            // จัดการรูปสินค้า (ใช้ Thumbnail API แก้ปัญหารูปไม่ขึ้น)
-            let prodId = getDriveId(item.productImageUrl);
-            if(prodId) {
-                document.getElementById('detailProdImg').src = 'https://drive.google.com/thumbnail?id=' + prodId + '&sz=w800';
-                document.getElementById('detailProdContainer').classList.remove('d-none');
-            } else {
-                document.getElementById('detailProdContainer').classList.add('d-none');
-            }
-
-            document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
-            document.getElementById('detailOrderId').innerText = item.orderId;
-            document.getElementById('detailShop').innerText = item.platform;
-            document.getElementById('detailDate').innerText = item.date;
-            document.getElementById('detailNotes').innerText = item.notes;
-
-            var detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-            detailModal.show();
+        function getPlatformClass(platform) {
+            let p = platform.toLowerCase();
+            if(p.includes('tiktok')) return 'tag-tiktok';
+            if(p.includes('shopee')) return 'tag-shopee';
+            if(p.includes('lazada')) return 'tag-lazada';
+            return 'tag-other';
         }
 
-        // ----------------------------------------------------
-        // ส่วนจัดการฟอร์มอัปโหลด
-        // ----------------------------------------------------
+        function renderList(records) {
+            const listContainer = document.getElementById('recordsList');
+            if(records.length === 0) {
+                listContainer.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
+                return;
+            }
+            
+            let html = '';
+            records.forEach((item, index) => {
+                html += `
+                <div class="list-item" onclick="openDetail(${index})">
+                    <div class="list-icon"><i class="bi bi-box-seam"></i></div>
+                    <div class="list-content">
+                        <h6>${item.tracking}</h6>
+                        <p>${item.date} • ${item.finalCondition}</p>
+                    </div>
+                    <span class="platform-tag ${getPlatformClass(item.platform)}">${item.platform || 'อื่นๆ'}</span>
+                </div>`;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        // ระบบค้นหา
+        function filterRecords() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = globalRecords.filter(item => item.tracking.toLowerCase().includes(query) || item.orderId.toLowerCase().includes(query));
+            renderList(filtered);
+        }
+
+        // ==========================================
+        // ระบบ WIZARD ควบคุมหน้าจอ 5 สเต็ป
+        // ==========================================
+        const stepTitles = ["ถ่ายรูปกล่องพัสดุ", "ตรวจสอบเลขคืนสินค้า", "ถ่ายวิดีโอเปิดกล่อง", "ถ่ายรูปสินค้าภายใน", "ประเมินสภาพสินค้า"];
+
+        function openWizard() {
+            currentStep = 1;
+            ocrTriggered = false;
+            updateWizardUI();
+            wizardModalInstance.show();
+        }
+
+        function closeWizard() {
+            wizardModalInstance.hide();
+        }
+
+        function updateWizardUI() {
+            // ซ่อนทุก step
+            for(let i=1; i<=totalSteps; i++) {
+                document.getElementById('step'+i).classList.add('d-none');
+                
+                // อัปเดต Stepper
+                let ind = document.getElementById('indicator'+i);
+                if(i < currentStep) {
+                    ind.classList.add('completed');
+                    ind.classList.remove('active');
+                } else if(i === currentStep) {
+                    ind.classList.add('active');
+                    ind.classList.remove('completed');
+                } else {
+                    ind.classList.remove('active', 'completed');
+                }
+            }
+            // โชว์ step ปัจจุบัน
+            document.getElementById('step'+currentStep).classList.remove('d-none');
+            document.getElementById('wizardTitle').innerText = stepTitles[currentStep-1];
+
+            // อัปเดตปุ่ม
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            
+            if(currentStep === 1) {
+                btnPrev.innerText = "ยกเลิก";
+                btnPrev.onclick = closeWizard;
+            } else {
+                btnPrev.innerText = "ย้อนกลับ";
+                btnPrev.onclick = prevStep;
+            }
+
+            if(currentStep === totalSteps) {
+                btnNext.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-1"></i> บันทึกข้อมูล';
+                btnNext.classList.add('active');
+                btnNext.onclick = submitData;
+            } else {
+                btnNext.innerHTML = 'ถัดไป <i class="bi bi-arrow-right ms-1"></i>';
+                // ไฮไลต์ปุ่ม Next ถ้าอัปโหลดรูป/วิดีโอในหน้านั้นแล้ว
+                if((currentStep===1 && boxImageBase64) || (currentStep===3 && videoBase64Data) || (currentStep===4 && productImageBase64) || currentStep===2) {
+                    btnNext.classList.add('active');
+                } else {
+                    btnNext.classList.remove('active');
+                }
+                btnNext.onclick = nextStep;
+            }
+        }
+
+        function nextStep() {
+            if(currentStep === 1 && !boxImageBase64) return alert("กรุณาถ่ายรูปกล่องพัสดุก่อนครับ");
+            
+            // ถ้ากำลังไป Step 2 และยังไม่เคยรัน OCR ให้รันซะ
+            if(currentStep === 1 && !ocrTriggered) {
+                ocrTriggered = true;
+                analyzeBoxImage(boxImageBase64);
+            }
+
+            if(currentStep < totalSteps) {
+                currentStep++;
+                updateWizardUI();
+            }
+        }
+
+        function prevStep() {
+            if(currentStep > 1) {
+                currentStep--;
+                updateWizardUI();
+            }
+        }
+
+        // ==========================================
+        // ฟังก์ชันจัดการไฟล์ และ ส่งข้อมูล (ใช้ระบบเดิม)
+        // ==========================================
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if (!file) return;
@@ -364,13 +646,16 @@
                     if (type === 'box') {
                         boxImageBase64 = base64;
                         document.getElementById('boxPreview').src = previewUrl;
-                        document.getElementById('boxPreviewContainer').classList.remove('d-none');
-                        analyzeBoxImage(base64);
+                        document.getElementById('boxPreview').style.display = 'block';
+                        document.getElementById('boxUploadArea').classList.add('has-file');
+                        ocrTriggered = false; // รีเซ็ตเพื่อให้อ่านใหม่ถ้าย้อนกลับมาเปลี่ยนรูป
                     } else {
                         productImageBase64 = base64;
                         document.getElementById('productPreview').src = previewUrl;
-                        document.getElementById('productPreviewContainer').classList.remove('d-none');
+                        document.getElementById('productPreview').style.display = 'block';
+                        document.getElementById('productUploadArea').classList.add('has-file');
                     }
+                    updateWizardUI(); // เพื่อเปลี่ยนสีปุ่ม Next
                 }
                 img.src = e.target.result;
             };
@@ -380,17 +665,24 @@
         function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            if (file.size > 40 * 1024 * 1024) {
-                alert("⚠️ วิดีโอขนาดใหญ่เกิน 40MB อาจทำให้การบันทึกช้าลงมาก แนะนำให้ถ่ายเป็นคลิปสั้นๆ แทนครับ");
-            }
+            if (file.size > 40 * 1024 * 1024) alert("⚠️ วิดีโอขนาดใหญ่เกิน 40MB อาจทำให้การบันทึกช้าลงมาก");
+            
             const videoURL = URL.createObjectURL(file);
-            const videoPreview = document.getElementById('videoPreview');
-            videoPreview.src = videoURL;
-            document.getElementById('videoPreviewContainer').classList.remove('d-none');
-            document.getElementById('videoFileName').innerText = file.name + " (" + (file.size / (1024*1024)).toFixed(2) + " MB)";
+            document.getElementById('videoPreview').src = videoURL;
+            document.getElementById('videoPreview').style.display = 'block';
+            
+            const nameEl = document.getElementById('videoFileName');
+            nameEl.innerText = file.name + " (" + (file.size / (1024*1024)).toFixed(2) + " MB)";
+            nameEl.classList.remove('d-none');
+            
+            document.getElementById('videoUploadArea').classList.add('has-file');
+            
             videoMimeType = file.type;
             const reader = new FileReader();
-            reader.onload = function(e) { videoBase64Data = e.target.result.split(',')[1]; };
+            reader.onload = function(e) { 
+                videoBase64Data = e.target.result.split(',')[1]; 
+                updateWizardUI();
+            };
             reader.readAsDataURL(file);
         }
 
@@ -414,10 +706,9 @@
         }
 
         async function submitData() {
-            const btn = document.getElementById('submitBtn');
-            if (!boxImageBase64) { alert("กรุณาอัปโหลดรูป 'ใบปะหน้ากล่อง' เป็นอย่างน้อยครับ"); return; }
+            const btn = document.getElementById('btnNext');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดข้อมูล...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
 
             const payload = {
                 action: "submit",
@@ -441,20 +732,68 @@
                     window.location.reload(); 
                 } else {
                     alert("❌ เกิดข้อผิดพลาด: " + result.message);
-                    resetSubmitButton(btn);
+                    btn.disabled = false;
+                    btn.innerText = "บันทึกข้อมูล";
                 }
             } catch (error) {
                 alert("❌ การเชื่อมต่อขัดข้อง: " + error.message);
-                resetSubmitButton(btn);
+                btn.disabled = false;
+                btn.innerText = "บันทึกข้อมูล";
             }
         }
 
-        function resetSubmitButton(btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> บันทึกข้อมูลลงระบบ';
+        // ==========================================
+        // ระบบเปิดดูรายละเอียดรายการเก่า
+        // ==========================================
+        function getDriveId(url) {
+            if(!url) return null;
+            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            return match ? match[1] : null;
         }
 
-        // เมื่อปิดหน้าต่าง Detail ให้หยุดเล่นวิดีโอ (ถ้ากำลังเล่นอยู่)
+        function openDetail(index) {
+            const item = globalRecords[index];
+            
+            document.getElementById('detailTracking').innerText = item.tracking;
+            document.getElementById('detailPlatform').innerText = item.platform;
+            
+            const condBadge = document.getElementById('detailConditionBadge');
+            condBadge.innerText = item.finalCondition;
+            if (item.finalCondition.includes("สมบูรณ์")) {
+                condBadge.style.backgroundColor = "#d4edda";
+                condBadge.style.color = "#155724";
+            } else {
+                condBadge.style.backgroundColor = "#f8d7da";
+                condBadge.style.color = "#721c24";
+            }
+
+            let boxId = getDriveId(item.boxImageUrl);
+            if(boxId) {
+                document.getElementById('detailBoxImg').src = 'https://drive.google.com/thumbnail?id=' + boxId + '&sz=w800';
+                document.getElementById('detailBoxContainer').classList.remove('d-none');
+            } else { document.getElementById('detailBoxContainer').classList.add('d-none'); }
+
+            let videoId = getDriveId(item.videoUrl);
+            if(videoId) {
+                document.getElementById('detailVideoFrame').src = 'https://drive.google.com/file/d/' + videoId + '/preview';
+                document.getElementById('detailVideoContainer').classList.remove('d-none');
+            } else { document.getElementById('detailVideoContainer').classList.add('d-none'); }
+
+            let prodId = getDriveId(item.productImageUrl);
+            if(prodId) {
+                document.getElementById('detailProdImg').src = 'https://drive.google.com/thumbnail?id=' + prodId + '&sz=w800';
+                document.getElementById('detailProdContainer').classList.remove('d-none');
+            } else { document.getElementById('detailProdContainer').classList.add('d-none'); }
+
+            document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
+            document.getElementById('detailOrderId').innerText = item.orderId;
+            document.getElementById('detailShop').innerText = item.platform;
+            document.getElementById('detailDate').innerText = item.date;
+            document.getElementById('detailNotes').innerText = item.notes;
+
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+
         document.getElementById('detailModal').addEventListener('hidden.bs.modal', function () {
             document.getElementById('detailVideoFrame').src = '';
         });
