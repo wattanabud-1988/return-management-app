@@ -736,15 +736,20 @@
                             const ttResponse = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(ttPayload) });
                             const ttResult = await ttResponse.json();
                             
-                            if (ttResult.status === "success" && ttResult.data.success) {
-                                // ถ้าเจอข้อมูล: ให้เพิ่มชื่อร้านใน Dropdown แล้วเลือกอัตโนมัติ
-                                const selectEl = document.getElementById('platform');
-                                const newOption = new Option(ttResult.data.platformName, ttResult.data.platformName);
-                                selectEl.add(newOption);
-                                selectEl.value = ttResult.data.platformName;
-                                
-                                // อัปเดตเลขออเดอร์ให้ตรงกับระบบเป๊ะๆ
-                                document.getElementById('orderId').value = ttResult.data.orderId;
+                            if (ttResult.status === "success") {
+                                if (ttResult.data.success) {
+                                    // ถ้าเจอข้อมูล: ให้เพิ่มชื่อร้านใน Dropdown แล้วเลือกอัตโนมัติ
+                                    const selectEl = document.getElementById('platform');
+                                    const newOption = new Option(ttResult.data.platformName, ttResult.data.platformName);
+                                    selectEl.add(newOption);
+                                    selectEl.value = ttResult.data.platformName;
+                                    
+                                    // อัปเดตเลขออเดอร์ให้ตรงกับระบบเป๊ะๆ
+                                    document.getElementById('orderId').value = ttResult.data.orderId;
+                                } else {
+                                    // 🌟 แจ้งเตือนถ้าหาไม่เจอใน 3 ร้าน
+                                    document.getElementById('analyzeError').innerText = "⚠️ " + ttResult.data.message;
+                                }
                             }
                         }
                         // ==========================================
