@@ -16,7 +16,14 @@
 </head>
 <body>
     <div class="container py-4" style="max-width: 600px;">
-        <h3 class="text-center mb-4 fw-bold text-primary"><i class="bi bi-box-seam"></i> ระบบรับสินค้าตีกลับ</h3>
+        <h3 class="text-center mb-3 fw-bold text-primary"><i class="bi bi-box-seam"></i> ระบบรับสินค้าตีกลับ</h3>
+
+        <!-- ปุ่มเปิดประวัติการบันทึก -->
+        <div class="text-end mb-3">
+            <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm" onclick="fetchRecords()" data-bs-toggle="modal" data-bs-target="#recordsModal">
+                <i class="bi bi-clock-history"></i> ประวัติล่าสุด (10 รายการ)
+            </button>
+        </div>
 
         <!-- 1. รูปใบปะหน้ากล่อง -->
         <div class="card mb-4 shadow-sm border-0 rounded-4">
@@ -128,7 +135,32 @@
         </button>
     </div>
 
-    <!-- Javascript -->
+    <!-- ---------------------------------------------------- -->
+    <!-- Modal (ป๊อปอัป) สำหรับแสดงประวัติการบันทึก -->
+    <!-- ---------------------------------------------------- -->
+    <div class="modal fade" id="recordsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-card-list"></i> 10 รายการล่าสุด</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="recordsBody">
+                    <div class="text-center text-muted my-4">
+                        <div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังโหลดข้อมูล...
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript ของ Bootstrap (จำเป็นสำหรับการทำ Modal ป๊อปอัป) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Javascript หลักของระบบ -->
     <script>
         // ⚠️ นำลิงก์ Web App (New Deployment) ของ Google Apps Script มาใส่ในเครื่องหมายคำพูดด้านล่างนี้ ⚠️
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyMY6DZH8DhBf2rLBcTnb15amHL0kHhj8oAdY9Mvo5sTUYoXQaGhoEV2-8LqTDd53ii/exec";
@@ -139,7 +171,50 @@
         let videoBase64Data = "";
         let videoMimeType = "";
 
-        // ฟังก์ชันจัดการอัปโหลดรูปภาพพร้อมย่อขนาด (เพื่อลดภาระเซิร์ฟเวอร์)
+        // ฟังก์ชันโหลดข้อมูลประวัติมาแสดง
+        async function fetchRecords() {
+            const recordsBody = document.getElementById('recordsBody');
+            recordsBody.innerHTML = '<div class="text-center text-muted my-4"><div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังดึงข้อมูล...</div>';
+            
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "getRecords" })
+                });
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    if(result.data.length === 0) {
+                        recordsBody.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
+                        return;
+                    }
+                    
+                    let html = '<div class="list-group">';
+                    result.data.forEach(item => {
+                        // เปลี่ยนสีป้ายแจ้งเตือนตามสภาพสินค้า
+                        let badgeColor = item.finalCondition.includes("สมบูรณ์") ? "bg-success" : "bg-danger";
+                        
+                        html += `
+                        <div class="list-group-item list-group-item-action py-3">
+                            <div class="d-flex w-100 justify-content-between mb-1">
+                                <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-box"></i> ${item.tracking}</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;">${item.date}</small>
+                            </div>
+                            <p class="mb-1 small text-secondary">แพลตฟอร์ม: <b>${item.platform}</b></p>
+                            <span class="badge ${badgeColor}">${item.finalCondition}</span>
+                        </div>`;
+                    });
+                    html += '</div>';
+                    recordsBody.innerHTML = html;
+                } else {
+                    recordsBody.innerHTML = `<div class="text-center text-danger my-4">❌ โหลดไม่ได้: ${result.message}</div>`;
+                }
+            } catch (error) {
+                recordsBody.innerHTML = `<div class="text-center text-danger my-4">❌ การเชื่อมต่อขัดข้อง: ${error.message}</div>`;
+            }
+        }
+
+        // ฟังก์ชันจัดการอัปโหลดรูปภาพพร้อมย่อขนาด
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if (!file) return;
@@ -183,12 +258,10 @@
             const file = event.target.files[0];
             if (!file) return;
             
-            // แจ้งเตือนถ้าวิดีโอใหญ่กว่า 40MB
             if (file.size > 40 * 1024 * 1024) {
-                alert("⚠️ วิดีโอมีขนาดใหญ่เกินไป (มากกว่า 40MB) อาจทำให้การบันทึกช้าลงมาก หรือระบบปฏิเสธการรับไฟล์ แนะนำให้ถ่ายเป็นคลิปสั้นๆ แทนครับ");
+                alert("⚠️ วิดีโอมีขนาดใหญ่เกินไป (มากกว่า 40MB) อาจทำให้การบันทึกช้าลงมาก แนะนำให้ถ่ายเป็นคลิปสั้นๆ แทนครับ");
             }
             
-            // แสดงพรีวิววิดีโอ
             const videoURL = URL.createObjectURL(file);
             const videoPreview = document.getElementById('videoPreview');
             videoPreview.src = videoURL;
@@ -197,7 +270,6 @@
             
             videoMimeType = file.type;
             
-            // แปลงเป็น Base64
             const reader = new FileReader();
             reader.onload = function(e) {
                 videoBase64Data = e.target.result.split(',')[1];
@@ -248,14 +320,13 @@
         async function submitData() {
             const btn = document.getElementById('submitBtn');
             
-            // บังคับให้ต้องถ่ายใบปะหน้าเป็นอย่างน้อย
             if (!boxImageBase64) {
                 alert("กรุณาอัปโหลดรูป 'ใบปะหน้ากล่อง' เป็นอย่างน้อยครับ");
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดข้อมูล (อาจใช้เวลา 1-2 นาที หากมีไฟล์วิดีโอ)...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดข้อมูล...';
 
             const payload = {
                 action: "submit",
@@ -264,7 +335,7 @@
                 orderId: document.getElementById('orderId').value,
                 boxImageBase64: boxImageBase64,
                 productImageBase64: productImageBase64,
-                videoBase64Data: videoBase64Data, // แนบข้อมูลวิดีโอไป
+                videoBase64Data: videoBase64Data, 
                 videoMimeType: videoMimeType,
                 aiCondition: document.getElementById('aiCondition').value,
                 finalCondition: document.getElementById('finalCondition').value,
@@ -280,7 +351,7 @@
 
                 if (result.status === "success") {
                     alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว!");
-                    window.location.reload(); // รีเฟรชหน้าเว็บเคลียร์ฟอร์ม
+                    window.location.reload(); 
                 } else {
                     alert("❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: " + result.message);
                     resetSubmitButton(btn);
