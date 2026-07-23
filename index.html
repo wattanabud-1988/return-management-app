@@ -12,6 +12,12 @@
         .card { transition: all 0.2s ease; }
         .card:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
         .loading { display: none; }
+        
+        /* สไตล์สำหรับหน้าต่างรายละเอียด */
+        .modal-detail-bg { background-color: #fcfaf5; } /* สีพื้นหลังครีมอ่อน */
+        .grid-detail { font-size: 0.85rem; }
+        .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
+        .notes-box { background-color: #f3efe6; border-radius: 10px; } /* สีพื้นหลังหมายเหตุ */
     </style>
 </head>
 <body>
@@ -29,27 +35,21 @@
         <div class="card mb-4 shadow-sm border-0 rounded-4">
             <div class="card-body p-4">
                 <h5 class="card-title fw-bold mb-3 text-secondary">1. รูปใบปะหน้ากล่อง</h5>
-                
                 <div class="d-grid mb-3">
                     <button type="button" class="btn btn-primary py-2 fw-bold" onclick="document.getElementById('boxInput').click()">
                         <i class="bi bi-camera"></i> เปิดกล้อง / เลือกรูป
                     </button>
-                    <!-- ปุ่มซ่อนสำหรับเลือกไฟล์ -->
                     <input type="file" id="boxInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'box')">
                 </div>
-                
-                <!-- พรีวิวรูปกล่อง -->
                 <div id="boxPreviewContainer" class="d-none text-center mb-3">
                     <img id="boxPreview" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
                 </div>
                 
-                <!-- สถานะการอ่าน OCR -->
                 <div id="analyzeLoading" class="loading text-center text-primary mb-3 fw-bold">
                     <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความผ่าน Google Drive...
                 </div>
                 <div id="analyzeError" class="text-danger small mb-3 text-center fw-bold"></div>
 
-                <!-- ฟอร์มข้อมูลจากหน้ากล่อง -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">แพลตฟอร์ม:</label>
                     <select id="platform" class="form-select bg-light">
@@ -75,16 +75,12 @@
         <div class="card mb-4 shadow-sm border-0 rounded-4">
             <div class="card-body p-4">
                 <h5 class="card-title fw-bold mb-3 text-secondary">2. วิดีโอตอนเปิดเช็คของ (ถ้ามี)</h5>
-                
                 <div class="d-grid mb-3">
                     <button type="button" class="btn btn-danger py-2 fw-bold" onclick="document.getElementById('videoInput').click()">
                         <i class="bi bi-camera-video"></i> ถ่าย / อัปโหลดวิดีโอ
                     </button>
-                    <!-- ปุ่มซ่อนสำหรับวิดีโอ (capture="environment" เพื่อเรียกกล้องหลังมือถือ) -->
                     <input type="file" id="videoInput" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
                 </div>
-                
-                <!-- พรีวิววิดีโอ -->
                 <div id="videoPreviewContainer" class="d-none text-center mt-3">
                     <video id="videoPreview" width="100%" controls class="rounded border shadow-sm"></video>
                     <p id="videoFileName" class="mt-2 text-muted small"></p>
@@ -96,19 +92,16 @@
         <div class="card mb-4 shadow-sm border-0 rounded-4">
             <div class="card-body p-4">
                 <h5 class="card-title fw-bold mb-3 text-secondary">3. รูปสินค้าด้านใน</h5>
-                
                 <div class="d-grid mb-3">
                     <button type="button" class="btn btn-secondary py-2 fw-bold" onclick="document.getElementById('productInput').click()">
                         <i class="bi bi-box-open"></i> เปิดกล้อง / เลือกรูป
                     </button>
                     <input type="file" id="productInput" accept="image/*" class="d-none" onchange="handleImageUpload(event, 'product')">
                 </div>
-                
                 <div id="productPreviewContainer" class="d-none text-center mb-3">
                     <img id="productPreview" class="img-fluid rounded border shadow-sm" style="max-height: 250px;">
                 </div>
 
-                <!-- ฟอร์มข้อมูลสินค้า -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">ผลประเมินสภาพ (ถ้ามี):</label>
                     <input type="text" id="aiCondition" class="form-control bg-light" placeholder="-">
@@ -136,7 +129,7 @@
     </div>
 
     <!-- ---------------------------------------------------- -->
-    <!-- Modal (ป๊อปอัป) สำหรับแสดงประวัติการบันทึก -->
+    <!-- Modal 1: หน้ารายการประวัติ (List) -->
     <!-- ---------------------------------------------------- -->
     <div class="modal fade" id="recordsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable">
@@ -145,33 +138,107 @@
                     <h5 class="modal-title fw-bold"><i class="bi bi-card-list"></i> 10 รายการล่าสุด</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="recordsBody">
+                <div class="modal-body p-0" id="recordsBody">
                     <div class="text-center text-muted my-4">
                         <div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังโหลดข้อมูล...
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Javascript ของ Bootstrap (จำเป็นสำหรับการทำ Modal ป๊อปอัป) -->
+    <!-- ---------------------------------------------------- -->
+    <!-- Modal 2: หน้ารายละเอียดเชิงลึก (Detail View) -->
+    <!-- ---------------------------------------------------- -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content modal-detail-bg">
+                <div class="modal-header border-0 pb-0">
+                    <small class="text-success fw-bold">รายละเอียดรายการคืน</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-1 px-3 pb-4">
+                    <!-- หัวข้อเลขพัสดุ -->
+                    <h4 class="fw-bold mb-3" id="detailTracking">JTTH...</h4>
+                    
+                    <!-- ป้ายแพลตฟอร์ม & สถานะ -->
+                    <div class="mb-3">
+                        <span class="badge bg-dark me-1" id="detailPlatform">Platform</span>
+                        <span class="badge" id="detailConditionBadge" style="background-color: #d4edda; color: #155724;">ปกติ</span>
+                    </div>
+                    
+                    <!-- แถบแจ้งเตือนส่งเข้า Sheet -->
+                    <div class="alert alert-success py-2 mb-3 d-flex align-items-center rounded-3 border-0" style="background-color: #e8f5e9;">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i> 
+                        <span class="text-success fw-bold" style="font-size: 0.85rem;">ส่งเข้า Google Sheet แล้ว</span>
+                    </div>
+                    
+                    <!-- รูปกล่องก่อนเปิด -->
+                    <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailBoxContainer">
+                        <img id="detailBoxImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
+                        <div class="card-body py-2 px-3 border-top bg-white">
+                            <small class="fw-bold text-dark">รูปกล่องก่อนเปิด</small>
+                        </div>
+                    </div>
+                    
+                    <!-- รูปสินค้าภายใน -->
+                    <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailProdContainer">
+                        <img id="detailProdImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
+                        <div class="card-body py-2 px-3 border-top bg-white">
+                            <small class="fw-bold text-dark">รูปสินค้าภายใน</small>
+                        </div>
+                    </div>
+                    
+                    <!-- ตารางกริดข้อมูล -->
+                    <div class="card border-0 shadow-sm mb-3 rounded-4 overflow-hidden">
+                        <div class="row g-0 grid-detail bg-white">
+                            <div class="col-6 border-end border-bottom">
+                                <small class="text-muted d-block mb-1">ผลประเมินสภาพ (AI)</small>
+                                <span class="fw-bold text-dark text-truncate d-block" id="detailAiInfo">-</span>
+                            </div>
+                            <div class="col-6 border-bottom">
+                                <small class="text-muted d-block mb-1">เลขคำสั่งซื้อ</small>
+                                <span class="fw-bold text-dark text-break" id="detailOrderId">-</span>
+                            </div>
+                            <div class="col-6 border-end border-bottom">
+                                <small class="text-muted d-block mb-1">ประเภทการรับคืน</small>
+                                <span class="fw-bold text-dark">สินค้าตีกลับ</span>
+                            </div>
+                            <div class="col-6 border-bottom">
+                                <small class="text-muted d-block mb-1">ร้านค้า</small>
+                                <span class="fw-bold text-dark" id="detailShop">-</span>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted d-block mb-1">วันเวลาที่รับ</small>
+                                <span class="fw-bold text-dark" id="detailDate">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- หมายเหตุ -->
+                    <div class="notes-box p-3 shadow-sm">
+                        <small class="fw-bold d-block mb-1 text-dark">หมายเหตุการตรวจสภาพ</small>
+                        <small class="text-secondary" id="detailNotes">-</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Javascript Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Javascript หลักของระบบ -->
     <script>
-        // ⚠️ นำลิงก์ Web App (New Deployment) ของ Google Apps Script มาใส่ในเครื่องหมายคำพูดด้านล่างนี้ ⚠️
+        // ลิงก์ Web App (อัปเดตล่าสุด)
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyMY6DZH8DhBf2rLBcTnb15amHL0kHhj8oAdY9Mvo5sTUYoXQaGhoEV2-8LqTDd53ii/exec";
 
-        // ตัวแปรเก็บข้อมูลไฟล์
         let boxImageBase64 = "";
         let productImageBase64 = "";
         let videoBase64Data = "";
         let videoMimeType = "";
+        let globalRecords = []; // ตัวแปรเก็บข้อมูลประวัติทั้งหมด
 
-        // ฟังก์ชันโหลดข้อมูลประวัติมาแสดง
+        // 1. ฟังก์ชันดึงประวัติมาแสดงเป็น List
         async function fetchRecords() {
             const recordsBody = document.getElementById('recordsBody');
             recordsBody.innerHTML = '<div class="text-center text-muted my-4"><div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังดึงข้อมูล...</div>';
@@ -184,24 +251,27 @@
                 const result = await response.json();
                 
                 if (result.status === "success") {
-                    if(result.data.length === 0) {
+                    globalRecords = result.data; // เก็บข้อมูลลงตัวแปร
+                    
+                    if(globalRecords.length === 0) {
                         recordsBody.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
                         return;
                     }
                     
-                    let html = '<div class="list-group">';
-                    result.data.forEach(item => {
-                        // เปลี่ยนสีป้ายแจ้งเตือนตามสภาพสินค้า
-                        let badgeColor = item.finalCondition.includes("สมบูรณ์") ? "bg-success" : "bg-danger";
+                    let html = '<div class="list-group list-group-flush">';
+                    globalRecords.forEach((item, index) => {
+                        let badgeClass = item.finalCondition.includes("สมบูรณ์") ? "bg-success" : "bg-danger";
                         
                         html += `
-                        <div class="list-group-item list-group-item-action py-3">
-                            <div class="d-flex w-100 justify-content-between mb-1">
-                                <h6 class="mb-1 fw-bold text-dark"><i class="bi bi-box"></i> ${item.tracking}</h6>
-                                <small class="text-muted" style="font-size: 0.75rem;">${item.date}</small>
+                        <div class="list-group-item list-group-item-action py-3 border-bottom" onclick="openDetail(${index})" style="cursor: pointer;">
+                            <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold text-dark">${item.tracking}</h6>
+                                <small class="text-muted" style="font-size: 0.7rem;">${item.date}</small>
                             </div>
-                            <p class="mb-1 small text-secondary">แพลตฟอร์ม: <b>${item.platform}</b></p>
-                            <span class="badge ${badgeColor}">${item.finalCondition}</span>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-secondary fw-bold">${item.platform}</small>
+                                <span class="badge ${badgeClass}">${item.finalCondition}</span>
+                            </div>
                         </div>`;
                     });
                     html += '</div>';
@@ -214,25 +284,85 @@
             }
         }
 
-        // ฟังก์ชันจัดการอัปโหลดรูปภาพพร้อมย่อขนาด
+        // 2. ฟังก์ชันเปิดหน้าต่างรายละเอียดเจาะลึก (ตามรูปต้นแบบ)
+        function openDetail(index) {
+            const item = globalRecords[index];
+            
+            // ซ่อนหน้าต่าง List อันเก่าก่อน
+            var recordsModalEl = document.getElementById('recordsModal');
+            var recordsModal = bootstrap.Modal.getInstance(recordsModalEl);
+            if (recordsModal) { recordsModal.hide(); }
+            
+            // เติมข้อมูลลงไปในหน้าต่างรายละเอียด
+            document.getElementById('detailTracking').innerText = item.tracking;
+            document.getElementById('detailPlatform').innerText = item.platform;
+            
+            // ตั้งค่าป้ายสถานะ (สีเขียว/แดง)
+            const condBadge = document.getElementById('detailConditionBadge');
+            condBadge.innerText = item.finalCondition;
+            if (item.finalCondition.includes("สมบูรณ์")) {
+                condBadge.style.backgroundColor = "#d4edda";
+                condBadge.style.color = "#155724";
+            } else {
+                condBadge.style.backgroundColor = "#f8d7da";
+                condBadge.style.color = "#721c24";
+            }
+
+            // ฟังก์ชันแปลงลิงก์ Google Drive ให้อ่านเป็นรูปภาพได้โดยตรง
+            function getDriveImgUrl(url) {
+                if(!url) return null;
+                let match = url.match(/\/d\/(.+?)\//);
+                return match ? 'https://drive.google.com/uc?id=' + match[1] : null;
+            }
+
+            // จัดการรูปกล่อง
+            let boxUrl = getDriveImgUrl(item.boxImageUrl);
+            if(boxUrl) {
+                document.getElementById('detailBoxImg').src = boxUrl;
+                document.getElementById('detailBoxContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('detailBoxContainer').classList.add('d-none');
+            }
+
+            // จัดการรูปสินค้า
+            let prodUrl = getDriveImgUrl(item.productImageUrl);
+            if(prodUrl) {
+                document.getElementById('detailProdImg').src = prodUrl;
+                document.getElementById('detailProdContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('detailProdContainer').classList.add('d-none');
+            }
+
+            // เติมข้อมูลในตาราง
+            document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
+            document.getElementById('detailOrderId').innerText = item.orderId;
+            document.getElementById('detailShop').innerText = item.platform;
+            document.getElementById('detailDate').innerText = item.date;
+            document.getElementById('detailNotes').innerText = item.notes;
+
+            // เปิดหน้าต่างรายละเอียด
+            var detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+            detailModal.show();
+        }
+
+        // ----------------------------------------------------
+        // ฟังก์ชันจัดการฟอร์มอัปโหลดด้านล่างนี้ (คงเดิมทั้งหมด)
+        // ----------------------------------------------------
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // ย่อขนาดความกว้าง
+                    const MAX_WIDTH = 800;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     
-                    // แปลงกลับเป็น Base64
                     const base64 = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
                     const previewUrl = canvas.toDataURL('image/jpeg', 0.6);
 
@@ -240,7 +370,6 @@
                         boxImageBase64 = base64;
                         document.getElementById('boxPreview').src = previewUrl;
                         document.getElementById('boxPreviewContainer').classList.remove('d-none');
-                        // ส่งไปให้ Google Drive OCR อ่านข้อความ
                         analyzeBoxImage(base64);
                     } else {
                         productImageBase64 = base64;
@@ -253,78 +382,45 @@
             reader.readAsDataURL(file);
         }
 
-        // ฟังก์ชันจัดการอัปโหลดวิดีโอ
         function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
             if (file.size > 40 * 1024 * 1024) {
-                alert("⚠️ วิดีโอมีขนาดใหญ่เกินไป (มากกว่า 40MB) อาจทำให้การบันทึกช้าลงมาก แนะนำให้ถ่ายเป็นคลิปสั้นๆ แทนครับ");
+                alert("⚠️ วิดีโอขนาดใหญ่เกิน 40MB อาจทำให้การบันทึกช้าลงมาก แนะนำให้ถ่ายเป็นคลิปสั้นๆ แทนครับ");
             }
-            
             const videoURL = URL.createObjectURL(file);
             const videoPreview = document.getElementById('videoPreview');
             videoPreview.src = videoURL;
             document.getElementById('videoPreviewContainer').classList.remove('d-none');
             document.getElementById('videoFileName').innerText = file.name + " (" + (file.size / (1024*1024)).toFixed(2) + " MB)";
-            
             videoMimeType = file.type;
-            
             const reader = new FileReader();
-            reader.onload = function(e) {
-                videoBase64Data = e.target.result.split(',')[1];
-            };
+            reader.onload = function(e) { videoBase64Data = e.target.result.split(',')[1]; };
             reader.readAsDataURL(file);
         }
 
-        // ฟังก์ชันส่งรูปให้ OCR วิเคราะห์
         async function analyzeBoxImage(base64Data) {
             document.getElementById('analyzeLoading').style.display = 'block';
             document.getElementById('analyzeError').innerText = "";
-            
-            const payload = {
-                action: "analyze",
-                prompt: "label",
-                imageBase64: base64Data
-            };
-
+            const payload = { action: "analyze", prompt: "label", imageBase64: base64Data };
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
-                
                 if (result.status === "success") {
                     try {
                         const data = JSON.parse(result.text);
                         document.getElementById('tracking').value = data.tracking || "";
                         document.getElementById('orderId').value = data.orderId || "";
-                        if (data.platform) {
-                            document.getElementById('platform').value = data.platform;
-                        }
-                    } catch (e) {
-                        document.getElementById('analyzeError').innerText = "❌ ดึงข้อมูลสำเร็จ แต่รูปแบบไม่ถูกต้อง";
-                    }
-                } else {
-                    document.getElementById('analyzeError').innerText = "❌ อ่านไม่สำเร็จ: " + result.message;
-                }
-            } catch (error) {
-                document.getElementById('analyzeError').innerText = "❌ การเชื่อมต่อขัดข้อง กรุณาลองใหม่ หรือกรอกด้วยมือครับ";
-            } finally {
-                document.getElementById('analyzeLoading').style.display = 'none';
-            }
+                        if (data.platform) document.getElementById('platform').value = data.platform;
+                    } catch (e) { document.getElementById('analyzeError').innerText = "❌ ดึงข้อมูลสำเร็จ แต่รูปแบบไม่ถูกต้อง"; }
+                } else { document.getElementById('analyzeError').innerText = "❌ อ่านไม่สำเร็จ: " + result.message; }
+            } catch (error) { document.getElementById('analyzeError').innerText = "❌ การเชื่อมต่อขัดข้อง"; } 
+            finally { document.getElementById('analyzeLoading').style.display = 'none'; }
         }
 
-        // ฟังก์ชันส่งข้อมูลทั้งหมดไปบันทึกลง Sheet
         async function submitData() {
             const btn = document.getElementById('submitBtn');
-            
-            if (!boxImageBase64) {
-                alert("กรุณาอัปโหลดรูป 'ใบปะหน้ากล่อง' เป็นอย่างน้อยครับ");
-                return;
-            }
-
+            if (!boxImageBase64) { alert("กรุณาอัปโหลดรูป 'ใบปะหน้ากล่อง' เป็นอย่างน้อยครับ"); return; }
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดข้อมูล...';
 
@@ -343,17 +439,13 @@
             };
 
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
-
                 if (result.status === "success") {
                     alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว!");
                     window.location.reload(); 
                 } else {
-                    alert("❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: " + result.message);
+                    alert("❌ เกิดข้อผิดพลาด: " + result.message);
                     resetSubmitButton(btn);
                 }
             } catch (error) {
