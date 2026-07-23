@@ -712,19 +712,51 @@
             document.getElementById('analyzeLoading').style.display = 'block';
             document.getElementById('analyzeError').innerText = "";
             const payload = { action: "analyze", prompt: "label", imageBase64: base64Data };
+            
             try {
+                // 1. ส่งรูปไปให้ AI อ่านข้อมูล (OCR)
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
+                
                 if (result.status === "success") {
                     try {
                         const data = JSON.parse(result.text);
                         document.getElementById('tracking').value = data.tracking || "";
                         document.getElementById('orderId').value = data.orderId || "";
                         if (data.platform) document.getElementById('platform').value = data.platform;
+
+                        // ==========================================
+                        // 🌟 ส่วนที่เพิ่มใหม่: ดึงข้อมูลร้านค้า TikTok
+                        // ==========================================
+                        if (data.platform === "TikTok" || data.platform === "tiktok") {
+                            document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> ค้นหาข้อมูลร้านค้า TikTok...';
+                            
+                            // ส่งเลขออเดอร์ที่ได้จาก AI ไปถามระบบ Backend ของเรา
+                            const ttPayload = { action: "getTikTokOrder", orderId: data.orderId };
+                            const ttResponse = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(ttPayload) });
+                            const ttResult = await ttResponse.json();
+                            
+                            if (ttResult.status === "success" && ttResult.data.success) {
+                                // ถ้าเจอข้อมูล: ให้เพิ่มชื่อร้านใน Dropdown แล้วเลือกอัตโนมัติ
+                                const selectEl = document.getElementById('platform');
+                                const newOption = new Option(ttResult.data.platformName, ttResult.data.platformName);
+                                selectEl.add(newOption);
+                                selectEl.value = ttResult.data.platformName;
+                                
+                                // อัปเดตเลขออเดอร์ให้ตรงกับระบบเป๊ะๆ
+                                document.getElementById('orderId').value = ttResult.data.orderId;
+                            }
+                        }
+                        // ==========================================
+
                     } catch (e) { document.getElementById('analyzeError').innerText = "❌ ดึงข้อมูลสำเร็จ แต่รูปแบบไม่ถูกต้อง"; }
                 } else { document.getElementById('analyzeError').innerText = "❌ อ่านไม่สำเร็จ: " + result.message; }
             } catch (error) { document.getElementById('analyzeError').innerText = "❌ การเชื่อมต่อขัดข้อง"; } 
-            finally { document.getElementById('analyzeLoading').style.display = 'none'; }
+            finally { 
+                // คืนค่าสถานะ Loading กลับเป็นเหมือนเดิมเผื่อกดซ้ำ
+                document.getElementById('analyzeLoading').style.display = 'none'; 
+                document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...';
+            }
         }
 
         async function submitData() {
