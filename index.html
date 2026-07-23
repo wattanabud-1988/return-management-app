@@ -128,83 +128,103 @@
 <body>
 
     <!-- ========================================== -->
-    <!-- 1. DASHBOARD (หน้าแรก) -->
+    <!-- 1. MAIN CONTENT (พื้นที่แสดงผลหลัก แบ่งหน้าด้วย JS) -->
     <!-- ========================================== -->
-    <div class="header-top">
-        <h1 class="header-title">ReturnFlow</h1>
-    </div>
 
-    <div class="hero-section">
-        <h2 class="hero-heading">รับสินค้าคืน</h2>
-        <p class="hero-desc">ตรวจรับการคืนสินค้าจากทุกแพลตฟอร์มในขั้นตอนเดียว</p>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon"><i class="bi bi-clipboard-check"></i></div>
-        <div class="stat-info">
-            <h6>ตรวจแล้ววันนี้</h6>
-            <h2 id="todayCount">0</h2>
-            <small>รายการที่บันทึกเข้าระบบแล้ว</small>
+    <!-- หน้า 1: Dashboard (ภาพรวม / รับสินค้าคืน) -->
+    <div id="dashboardView" class="view-section">
+        <div class="header-top">
+            <h1 class="header-title">ReturnFlow</h1>
+            <span class="badge-warehouse"><i class="bi bi-shop"></i> คลังสินค้า 1</span>
         </div>
-    </div>
 
-    <div class="main-container">
-        <div class="text-center"><span class="section-title">ขั้นตอนรับสินค้าคืน</span></div>
-        
-        <div class="step-grid">
-            <div class="step-card active">
-                <div class="step-badge">1</div>
-                <i class="bi bi-camera step-icon"></i>
-                <h6>ถ่ายรูปกล่อง</h6>
-                <small>เก็บหลักฐานก่อนเปิด</small>
-            </div>
-            <div class="step-card yellow">
-                <div class="step-badge yellow">2</div>
-                <i class="bi bi-file-earmark-text step-icon"></i>
-                <h6>ตรวจเลขคืนสินค้า</h6>
-                <small>OCR อ่านฉลากอัตโนมัติ</small>
-            </div>
-            <div class="step-card">
-                <div class="step-badge">3</div>
-                <i class="bi bi-box-seam step-icon"></i>
-                <h6>ถ่ายรูปสินค้า</h6>
-                <small>ถ่ายของภายในกล่อง</small>
-            </div>
-            <div class="step-card orange">
-                <div class="step-badge orange">4</div>
-                <i class="bi bi-shield-check step-icon"></i>
-                <h6>ตรวจสภาพ</h6>
-                <small>ปกติหรือมีปัญหา</small>
+        <div class="hero-section">
+            <p class="hero-subtitle">RETURN OPERATIONS</p>
+            <h2 class="hero-heading">รับสินค้าคืน</h2>
+            <p class="hero-desc">ตรวจรับสินค้าตีกลับจากทุกแพลตฟอร์มในขั้นตอนเดียว</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-clipboard-check"></i></div>
+            <div class="stat-info">
+                <h6>ตรวจแล้ววันนี้</h6>
+                <h2 id="todayCount">0</h2>
+                <small>รายการที่บันทึกเข้าระบบแล้ว</small>
             </div>
         </div>
 
-        <button class="btn-main" onclick="openWizard()">
-            <span><i class="bi bi-camera-fill me-2"></i> เริ่มรับสินค้าคืน</span>
-            <div class="arrow-circle"><i class="bi bi-arrow-right"></i></div>
-        </button>
+        <div class="main-container">
+            <div class="text-center"><span class="section-title">ขั้นตอนรับสินค้าคืน</span></div>
+            
+            <div class="step-grid">
+                <div class="step-card active">
+                    <div class="step-badge">1</div>
+                    <i class="bi bi-camera step-icon"></i>
+                    <h6>ถ่ายรูปกล่อง</h6>
+                    <small>เก็บหลักฐานก่อนเปิด</small>
+                </div>
+                <div class="step-card yellow">
+                    <div class="step-badge yellow">2</div>
+                    <i class="bi bi-file-earmark-text step-icon"></i>
+                    <h6>ตรวจเลขคืนสินค้า</h6>
+                    <small>OCR อ่านฉลากอัตโนมัติ</small>
+                </div>
+                <div class="step-card">
+                    <div class="step-badge">3</div>
+                    <i class="bi bi-box-seam step-icon"></i>
+                    <h6>ถ่ายรูปสินค้า</h6>
+                    <small>ถ่ายของภายในกล่อง</small>
+                </div>
+                <div class="step-card orange">
+                    <div class="step-badge orange">4</div>
+                    <i class="bi bi-shield-check step-icon"></i>
+                    <h6>ตรวจสภาพ</h6>
+                    <small>ปกติหรือมีปัญหา</small>
+                </div>
+            </div>
+
+            <button class="btn-main" onclick="openWizard()">
+                <span><i class="bi bi-camera-fill me-2"></i> เริ่มรับสินค้าคืน</span>
+                <div class="arrow-circle"><i class="bi bi-arrow-right"></i></div>
+            </button>
+        </div>
     </div>
 
-    <div class="main-container" style="background: #e5e2d8; margin-bottom: 100px;">
-        <div class="text-center"><span class="section-title">รายการล่าสุด</span></div>
-        
-        <div class="search-box">
-            <i class="bi bi-search text-muted"></i>
-            <input type="text" id="searchInput" placeholder="ค้นหาเลขคืนสินค้า..." onkeyup="filterRecords()">
+    <!-- หน้า 2: History (ประวัติรายการ) -->
+    <div id="historyView" class="view-section d-none">
+        <div class="header-top">
+            <h1 class="header-title">ReturnFlow</h1>
+            <span class="badge-warehouse"><i class="bi bi-shop"></i> คลังสินค้า 1</span>
         </div>
 
-        <div id="recordsList">
-            <div class="text-center text-muted my-4">
-                <div class="spinner-border spinner-border-sm text-success mb-2" role="status"></div><br>กำลังดึงข้อมูล...
+        <div class="hero-section">
+            <p class="hero-subtitle">RETURN HISTORY</p>
+            <h2 class="hero-heading">ประวัติรายการรับคืน</h2>
+            <p class="hero-desc">ค้นหาและเปิดดูหลักฐานการรับคืนย้อนหลัง</p>
+        </div>
+
+        <div class="main-container mb-5" style="background: #e5e2d8; min-height: 50vh;">
+            <div class="text-center"><span class="section-title">รายการทั้งหมด</span></div>
+            
+            <div class="search-box">
+                <i class="bi bi-search text-muted"></i>
+                <input type="text" id="searchInput" placeholder="ค้นหาเลขคืน ชื่อสินค้า หรือแพลตฟอร์ม..." onkeyup="filterRecords()">
             </div>
-            <!-- รายการจะถูกแทรกที่นี่ -->
+
+            <div id="recordsList">
+                <div class="text-center text-muted my-4">
+                    <div class="spinner-border spinner-border-sm text-success mb-2" role="status"></div><br>กำลังดึงข้อมูล...
+                </div>
+                <!-- รายการจะถูกแทรกที่นี่ -->
+            </div>
         </div>
     </div>
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <a href="#" class="nav-item"><i class="bi bi-grid-fill"></i>ภาพรวม</a>
-        <a href="#" class="nav-item active" onclick="openWizard()"><i class="bi bi-box-seam"></i>รับสินค้าคืน</a>
-        <a href="#" class="nav-item"><i class="bi bi-clock-history"></i>ประวัติรายการ</a>
+        <a href="#" class="nav-item" onclick="switchTab('dashboardView', this)"><i class="bi bi-grid-fill"></i>ภาพรวม</a>
+        <a href="#" class="nav-item active" onclick="switchTab('dashboardView', this)"><i class="bi bi-box-seam"></i>รับสินค้าคืน</a>
+        <a href="#" class="nav-item" onclick="switchTab('historyView', this)"><i class="bi bi-clock-history"></i>ประวัติรายการ</a>
         <a href="#" class="nav-item"><i class="bi bi-gear"></i>ตั้งค่าระบบ</a>
     </div>
 
@@ -382,7 +402,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 3. DETAIL MODAL (หน้ารายละเอียดแบบเดิม) -->
+    <!-- 3. DETAIL MODAL (หน้ารายละเอียดรายการเก่า) -->
     <!-- ========================================== -->
     <div class="modal fade" id="detailModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
@@ -461,7 +481,22 @@
         let wizardModalInstance = null;
         let ocrTriggered = false;
 
-        // 1. โหลดข้อมูลอัตโนมัติเมื่อเปิดหน้าเว็บ
+        // ฟังก์ชันสลับหน้าจอ (Tab Switching)
+        function switchTab(tabId, element) {
+            document.getElementById('dashboardView').classList.add('d-none');
+            document.getElementById('historyView').classList.add('d-none');
+            
+            document.getElementById(tabId).classList.remove('d-none');
+            
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            if (element) {
+                element.classList.add('active');
+            }
+        }
+
+        // โหลดข้อมูลอัตโนมัติเมื่อเปิดหน้าเว็บ
         window.onload = function() {
             wizardModalInstance = new bootstrap.Modal(document.getElementById('wizardModal'));
             fetchRecords();
@@ -486,14 +521,12 @@
         }
 
         function updateDashboardStats() {
-            // นับจำนวนที่ทำรายการวันนี้
             const todayStr = new Date().toLocaleDateString('th-TH');
             let todayCount = 0;
             globalRecords.forEach(item => {
-                // เช็คแค่วันที่ตรงกัน (คร่าวๆ)
                 if(item.date.includes(new Date().getDate())) todayCount++; 
             });
-            document.getElementById('todayCount').innerText = todayCount > 0 ? todayCount : globalRecords.length; // ใช้ยอดรวมชั่วคราวถ้าไม่ตรง
+            document.getElementById('todayCount').innerText = todayCount > 0 ? todayCount : globalRecords.length;
         }
 
         function getPlatformClass(platform) {
@@ -550,11 +583,9 @@
         }
 
         function updateWizardUI() {
-            // ซ่อนทุก step
             for(let i=1; i<=totalSteps; i++) {
                 document.getElementById('step'+i).classList.add('d-none');
                 
-                // อัปเดต Stepper
                 let ind = document.getElementById('indicator'+i);
                 if(i < currentStep) {
                     ind.classList.add('completed');
@@ -566,11 +597,9 @@
                     ind.classList.remove('active', 'completed');
                 }
             }
-            // โชว์ step ปัจจุบัน
             document.getElementById('step'+currentStep).classList.remove('d-none');
             document.getElementById('wizardTitle').innerText = stepTitles[currentStep-1];
 
-            // อัปเดตปุ่ม
             const btnPrev = document.getElementById('btnPrev');
             const btnNext = document.getElementById('btnNext');
             
@@ -588,7 +617,6 @@
                 btnNext.onclick = submitData;
             } else {
                 btnNext.innerHTML = 'ถัดไป <i class="bi bi-arrow-right ms-1"></i>';
-                // ไฮไลต์ปุ่ม Next ถ้าอัปโหลดรูป/วิดีโอในหน้านั้นแล้ว
                 if((currentStep===1 && boxImageBase64) || (currentStep===3 && videoBase64Data) || (currentStep===4 && productImageBase64) || currentStep===2) {
                     btnNext.classList.add('active');
                 } else {
@@ -601,7 +629,6 @@
         function nextStep() {
             if(currentStep === 1 && !boxImageBase64) return alert("กรุณาถ่ายรูปกล่องพัสดุก่อนครับ");
             
-            // ถ้ากำลังไป Step 2 และยังไม่เคยรัน OCR ให้รันซะ
             if(currentStep === 1 && !ocrTriggered) {
                 ocrTriggered = true;
                 analyzeBoxImage(boxImageBase64);
@@ -621,7 +648,7 @@
         }
 
         // ==========================================
-        // ฟังก์ชันจัดการไฟล์ และ ส่งข้อมูล (ใช้ระบบเดิม)
+        // ฟังก์ชันจัดการไฟล์
         // ==========================================
         function handleImageUpload(event, type) {
             const file = event.target.files[0];
@@ -646,14 +673,14 @@
                         document.getElementById('boxPreview').src = previewUrl;
                         document.getElementById('boxPreview').style.display = 'block';
                         document.getElementById('boxUploadArea').classList.add('has-file');
-                        ocrTriggered = false; // รีเซ็ตเพื่อให้อ่านใหม่ถ้าย้อนกลับมาเปลี่ยนรูป
+                        ocrTriggered = false;
                     } else {
                         productImageBase64 = base64;
                         document.getElementById('productPreview').src = previewUrl;
                         document.getElementById('productPreview').style.display = 'block';
                         document.getElementById('productUploadArea').classList.add('has-file');
                     }
-                    updateWizardUI(); // เพื่อเปลี่ยนสีปุ่ม Next
+                    updateWizardUI(); 
                 }
                 img.src = e.target.result;
             };
@@ -741,7 +768,7 @@
         }
 
         // ==========================================
-        // ระบบเปิดดูรายละเอียดรายการเก่า
+        // ระบบเปิดดูรายละเอียด
         // ==========================================
         function getDriveId(url) {
             if(!url) return null;
