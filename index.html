@@ -235,7 +235,7 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: ข้อมูล OCR -->
+                   <!-- Step 2: ข้อมูล OCR -->
                     <div id="step2" class="wizard-step d-none">
                         <div class="info-box mb-2"><i class="bi bi-robot"></i><div><h6>ตรวจสอบข้อมูลอัตโนมัติ</h6><p>ระบบ AI จะพยายามอ่านข้อมูล กรุณาตรวจสอบ</p></div></div>
                         
@@ -266,16 +266,16 @@
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
                             <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์เลขออเดอร์ หรือรอตรวจสอบ...">
 
-                            <!-- ปุ่มตรวจสอบ API -->
+                            <!-- ✅ ย้ายช่องร้านค้าขึ้นมาต่อตรงนี้เลย (ก่อนปุ่มกด) -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
+                            <input type="text" id="shopName" class="form-control mb-4" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
+
+                            <!-- ปุ่มตรวจสอบ API ถูกดันลงมาตรงนี้ -->
                             <button type="button" class="btn w-100 mb-4 btn-check-api py-2" onclick="manualCheckAPI()">
                                 <span id="checkApiText">🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน</span>
                             </button>
 
-                            <!-- ✅ ย้ายช่องร้านค้ามาไว้ตรงนี้ (ต่อจากปุ่มค้นหา) -->
-                            <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
-                            <input type="text" id="shopName" class="form-control mb-4" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
-
-                            <!-- ✅ ลบแท็บรอตรวจสอบออก เหลือแค่ 2 หมวดหมู่ -->
+                            <!-- หมวดหมู่เหลือแค่ 2 อัน (ตีกลับ / คืนสินค้า) -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ประเภทการรับคืน</label>
                             <div class="d-flex flex-column gap-2 mb-2" id="returnTypeGroup">
                                 <div id="type-สินค้าตีกลับ" class="return-type-box" onclick="selectReturnType('สินค้าตีกลับ')">สินค้าตีกลับ</div>
