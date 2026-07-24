@@ -565,21 +565,23 @@
 
        function selectPlatform(platformName) {
             document.querySelectorAll('.btn-platform').forEach(btn => {
-                btn.classList.remove('active'); btn.innerText = btn.innerText.replace('✓ ', '');
+                btn.classList.remove('active'); 
+                btn.innerText = btn.innerText.replace('✓ ', '');
             });
             const activeBtn = document.getElementById('btn-' + platformName);
-            if(activeBtn) { activeBtn.classList.add('active'); activeBtn.innerText = '✓ ' + platformName; }
+            if(activeBtn) { 
+                activeBtn.classList.add('active'); 
+                activeBtn.innerText = '✓ ' + platformName; 
+            }
             document.getElementById('platform').value = platformName;
 
-            // 👇 โค้ดที่เพิ่มใหม่สำหรับจัดการโหมด Manual ของ Shopee
             const checkApiBtn = document.querySelector('.btn-check-api');
             let manualAlertBox = document.getElementById('manualAlertBox');
 
-            if (platformName === 'Shopee') {
-                // ซ่อนปุ่มเช็ค API
-                checkApiBtn.style.display = 'none'; 
+            // ถ้าเป็น Shopee หรือ ลูกค้าส่งเอง ให้เข้าสู่ "โหมดกรอกเอง"
+            if (platformName === 'Shopee' || platformName === 'ลูกค้าส่งเอง') {
+                if(checkApiBtn) checkApiBtn.style.display = 'none'; 
                 
-                // สร้างกล่องแจ้งเตือนสีเหลือง (ถ้ายังไม่มี)
                 if(!manualAlertBox) {
                     const alertDiv = document.createElement('div');
                     alertDiv.id = 'manualAlertBox';
@@ -589,21 +591,27 @@
                     alertDiv.style.color = '#856404';
                     alertDiv.style.fontSize = '13px';
                     alertDiv.style.borderRadius = '8px';
-                    alertDiv.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" และเลือกประเภทการรับคืนด้วยตนเอง';
-                    
-                    // แทรกกล่องนี้ไว้ใต้ปุ่มเลือกแพลตฟอร์ม
                     document.getElementById('platformGroup').insertAdjacentElement('afterend', alertDiv);
+                    manualAlertBox = alertDiv;
                 } else {
                     manualAlertBox.style.display = 'block';
                 }
+
+                // เปลี่ยนข้อความแจ้งเตือนตามแพลตฟอร์ม
+                if (platformName === 'Shopee') {
+                    manualAlertBox.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" ด้วยตนเอง';
+                } else {
+                    manualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
+                }
                 
-                // ซ่อนกล่องแจ้งเตือน API อื่นๆ
-                document.getElementById('errorAlertBox').classList.add('d-none');
-                document.getElementById('successAlertBox').classList.add('d-none');
+                const errorAlertBox = document.getElementById('errorAlertBox');
+                const successAlertBox = document.getElementById('successAlertBox');
+                if(errorAlertBox) errorAlertBox.classList.add('d-none');
+                if(successAlertBox) successAlertBox.classList.add('d-none');
                 
             } else {
-                // ถ้าเป็น TikTok หรือ Lazada ให้แสดงปุ่ม API เหมือนเดิม
-                checkApiBtn.style.display = 'block'; 
+                // ถ้าเป็น TikTok หรือ Lazada ให้แสดงปุ่มเช็ค API ตามปกติ
+                if(checkApiBtn) checkApiBtn.style.display = 'block'; 
                 if(manualAlertBox) manualAlertBox.style.display = 'none';
             }
         }
