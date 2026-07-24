@@ -250,13 +250,22 @@
                             <span id="successMsgText"></span>
                         </div>
 
-                        <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
-                            <label class="form-label fw-bold" style="font-size: 14px;">แพลตฟอร์ม</label>
-                            <div class="d-flex gap-2 mb-3" id="platformGroup">
-                                <button type="button" id="btn-Lazada" class="btn-platform platform-lazada" onclick="selectPlatform('Lazada')">Lazada</button>
-                                <button type="button" id="btn-Shopee" class="btn-platform platform-shopee" onclick="selectPlatform('Shopee')">Shopee</button>
-                                <button type="button" id="btn-TikTok" class="btn-platform platform-tiktok active" onclick="selectPlatform('TikTok')">✓ TikTok</button>
-                            </div>
+                        <!-- แพลตฟอร์ม -->
+<div class="mb-3">
+    <label class="form-label fw-bold">แพลตฟอร์ม</label>
+    
+    <!-- ปุ่มเลือกแพลตฟอร์มทั้ง 4 ปุ่ม -->
+    <div class="d-flex justify-content-between mb-3" id="platformGroup" style="gap: 5px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-outline-primary flex-fill btn-platform" id="btn-Lazada" onclick="selectPlatform('Lazada')">Lazada</button>
+        <button type="button" class="btn btn-outline-danger flex-fill btn-platform" id="btn-Shopee" onclick="selectPlatform('Shopee')">Shopee</button>
+        <button type="button" class="btn btn-outline-secondary flex-fill btn-platform" id="btn-TikTok" onclick="selectPlatform('TikTok')">TikTok</button>
+        <button type="button" class="btn btn-outline-success flex-fill btn-platform" id="btn-ลูกค้าส่งเอง" onclick="selectPlatform('ลูกค้าส่งเอง')" style="font-size: 0.85rem; padding: 0.375rem 0.2rem;">ลูกค้าส่งเอง</button>
+    </div>
+
+    <!-- กล่องแจ้งเตือนสีเหลือง (ซ่อนไว้ก่อน จะแสดงเมื่อกดปุ่มโหมดแมนนวล) -->
+    <div id="manualAlertBox" class="alert mb-3" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; font-size: 13px; border-radius: 8px; display: none;">
+    </div>
+</div>
                             <input type="hidden" id="platform" value="TikTok">
 
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขพัสดุ / เลขคืนสินค้า <span class="text-danger">*</span></label>
@@ -561,51 +570,56 @@
 
         function prevStep() { if(currentStep > 1) { currentStep--; updateWizardUI(); } }
 
-       function selectPlatform(platformName) {
-            document.querySelectorAll('.btn-platform').forEach(btn => {
-                btn.classList.remove('active'); btn.innerText = btn.innerText.replace('✓ ', '');
-            });
-            const activeBtn = document.getElementById('btn-' + platformName);
-            if(activeBtn) { activeBtn.classList.add('active'); activeBtn.innerText = '✓ ' + platformName; }
-            document.getElementById('platform').value = platformName;
+       // ฟังก์ชันจัดการเมื่อผู้ใช้กดเลือกแพลตฟอร์ม
+function selectPlatform(platformName) {
+    // 1. เคลียร์สถานะปุ่มทั้งหมด (เอาสีและเครื่องหมายถูกออก)
+    document.querySelectorAll('.btn-platform').forEach(btn => {
+        btn.classList.remove('active'); 
+        btn.innerText = btn.innerText.replace('✓ ', '');
+    });
 
-            // 👇 โค้ดที่เพิ่มใหม่สำหรับจัดการโหมด Manual ของ Shopee
-            const checkApiBtn = document.querySelector('.btn-check-api');
-            let manualAlertBox = document.getElementById('manualAlertBox');
+    // 2. ทำให้ปุ่มที่ถูกกดกลายเป็นแบบ Active (เพิ่มสีและใส่เครื่องหมายถูก)
+    const activeBtn = document.getElementById('btn-' + platformName);
+    if (activeBtn) { 
+        activeBtn.classList.add('active'); 
+        activeBtn.innerText = '✓ ' + platformName; 
+    }
 
+    // 3. อัปเดตค่าแพลตฟอร์มลงในตัวแปร/ฟอร์ม
+    const platformInput = document.getElementById('platform');
+    if (platformInput) {
+        platformInput.value = platformName;
+    }
+
+    // 4. จัดการปุ่มเช็ค API และ กล่องแจ้งเตือนต่างๆ
+    const checkApiBtn = document.querySelector('.btn-check-api'); 
+    const manualAlertBox = document.getElementById('manualAlertBox');
+    const errorAlertBox = document.getElementById('errorAlertBox'); 
+    const successAlertBox = document.getElementById('successAlertBox'); 
+
+    // เงื่อนไข: ถ้าเป็น "Shopee" หรือ "ลูกค้าส่งเอง" ให้เข้าสู่โหมดกรอกมือ (Manual)
+    if (platformName === 'Shopee' || platformName === 'ลูกค้าส่งเอง') {
+        
+        if (checkApiBtn) checkApiBtn.style.display = 'none'; // ซ่อนปุ่มแว่นขยายค้นหา API
+        if (errorAlertBox) errorAlertBox.classList.add('d-none'); // ซ่อนแจ้งเตือนแดง
+        if (successAlertBox) successAlertBox.classList.add('d-none'); // ซ่อนแจ้งเตือนเขียว
+
+        // แสดงกล่องเหลือง และเปลี่ยนข้อความตามปุ่มที่กด
+        if (manualAlertBox) {
+            manualAlertBox.style.display = 'block';
             if (platformName === 'Shopee') {
-                // ซ่อนปุ่มเช็ค API
-                checkApiBtn.style.display = 'none'; 
-                
-                // สร้างกล่องแจ้งเตือนสีเหลือง (ถ้ายังไม่มี)
-                if(!manualAlertBox) {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.id = 'manualAlertBox';
-                    alertDiv.className = 'alert mb-3';
-                    alertDiv.style.backgroundColor = '#fff3cd';
-                    alertDiv.style.border = '1px solid #ffeeba';
-                    alertDiv.style.color = '#856404';
-                    alertDiv.style.fontSize = '13px';
-                    alertDiv.style.borderRadius = '8px';
-                    alertDiv.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" และเลือกประเภทการรับคืนด้วยตนเอง';
-                    
-                    // แทรกกล่องนี้ไว้ใต้ปุ่มเลือกแพลตฟอร์ม
-                    document.getElementById('platformGroup').insertAdjacentElement('afterend', alertDiv);
-                } else {
-                    manualAlertBox.style.display = 'block';
-                }
-                
-                // ซ่อนกล่องแจ้งเตือน API อื่นๆ
-                document.getElementById('errorAlertBox').classList.add('d-none');
-                document.getElementById('successAlertBox').classList.add('d-none');
-                
+                manualAlertBox.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" ด้วยตนเอง';
             } else {
-                // ถ้าเป็น TikTok หรือ Lazada ให้แสดงปุ่ม API เหมือนเดิม
-                checkApiBtn.style.display = 'block'; 
-                if(manualAlertBox) manualAlertBox.style.display = 'none';
+                manualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
             }
         }
-
+        
+    } else {
+        // เงื่อนไข: ถ้าเป็น "TikTok" หรือ "Lazada" (มีระบบเชื่อมต่อ API)
+        if (checkApiBtn) checkApiBtn.style.display = 'block'; // แสดงปุ่มแว่นขยายค้นหา API
+        if (manualAlertBox) manualAlertBox.style.display = 'none'; // ซ่อนกล่องเหลือง
+    }
+}
         function selectReturnType(typeName) {
             document.querySelectorAll('.return-type-box').forEach(box => {
                 box.classList.remove('active'); box.innerText = box.innerText.replace('✓ ', '');
