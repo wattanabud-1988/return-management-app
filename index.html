@@ -561,13 +561,49 @@
 
         function prevStep() { if(currentStep > 1) { currentStep--; updateWizardUI(); } }
 
-        function selectPlatform(platformName) {
+       function selectPlatform(platformName) {
             document.querySelectorAll('.btn-platform').forEach(btn => {
                 btn.classList.remove('active'); btn.innerText = btn.innerText.replace('✓ ', '');
             });
             const activeBtn = document.getElementById('btn-' + platformName);
             if(activeBtn) { activeBtn.classList.add('active'); activeBtn.innerText = '✓ ' + platformName; }
             document.getElementById('platform').value = platformName;
+
+            // 👇 โค้ดที่เพิ่มใหม่สำหรับจัดการโหมด Manual ของ Shopee
+            const checkApiBtn = document.querySelector('.btn-check-api');
+            let manualAlertBox = document.getElementById('manualAlertBox');
+
+            if (platformName === 'Shopee') {
+                // ซ่อนปุ่มเช็ค API
+                checkApiBtn.style.display = 'none'; 
+                
+                // สร้างกล่องแจ้งเตือนสีเหลือง (ถ้ายังไม่มี)
+                if(!manualAlertBox) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.id = 'manualAlertBox';
+                    alertDiv.className = 'alert mb-3';
+                    alertDiv.style.backgroundColor = '#fff3cd';
+                    alertDiv.style.border = '1px solid #ffeeba';
+                    alertDiv.style.color = '#856404';
+                    alertDiv.style.fontSize = '13px';
+                    alertDiv.style.borderRadius = '8px';
+                    alertDiv.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" และเลือกประเภทการรับคืนด้วยตนเอง';
+                    
+                    // แทรกกล่องนี้ไว้ใต้ปุ่มเลือกแพลตฟอร์ม
+                    document.getElementById('platformGroup').insertAdjacentElement('afterend', alertDiv);
+                } else {
+                    manualAlertBox.style.display = 'block';
+                }
+                
+                // ซ่อนกล่องแจ้งเตือน API อื่นๆ
+                document.getElementById('errorAlertBox').classList.add('d-none');
+                document.getElementById('successAlertBox').classList.add('d-none');
+                
+            } else {
+                // ถ้าเป็น TikTok หรือ Lazada ให้แสดงปุ่ม API เหมือนเดิม
+                checkApiBtn.style.display = 'block'; 
+                if(manualAlertBox) manualAlertBox.style.display = 'none';
+            }
         }
 
         function selectReturnType(typeName) {
