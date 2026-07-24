@@ -9,10 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* ดันเนื้อหาในแต่ละหน้าไม่ให้โดนปุ่มด้านล่างบัง */
-.wizard-step {
-    padding-bottom: 110px !important;
-}
+        .wizard-step { padding-bottom: 110px !important; }
         :root {
             --primary-green: #295743;
             --primary-green-hover: #1e4031;
@@ -266,6 +263,10 @@
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขพัสดุ / เลขคืนสินค้า <span class="text-danger">*</span></label>
                             <input type="text" id="tracking" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="สแกนหรือพิมพ์เลขพัสดุ">
 
+                            <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
+                            <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์เลขออเดอร์ หรือรอตรวจสอบ...">
+
+                            <!-- ปรับปุ่มให้เรียก manualCheckAPI ที่ส่งค่า orderId ไปด้วย -->
                             <button type="button" class="btn w-100 mb-4 btn-check-api py-2" onclick="manualCheckAPI()">
                                 <span id="checkApiText">🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน</span>
                             </button>
@@ -278,11 +279,6 @@
                             </div>
                             <input type="hidden" id="returnType" value="รอตรวจสอบ">
 
-                            <!-- ปลดล็อก readonly ออก ให้พิมพ์เองได้เลย -->
-                            <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
-                            <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์เลขออเดอร์ หรือรอตรวจสอบ...">
-
-                            <!-- ปลดล็อก readonly ออก ให้พิมพ์เองได้เลย -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
                             <input type="text" id="shopName" class="form-control mb-2" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
                             
@@ -580,19 +576,20 @@
             if (data.shopName) document.getElementById('shopName').value = data.shopName;
             if (data.returnType) selectReturnType(data.returnType);
 
+            // ใส่เหตุผลการตีกลับอัตโนมัติในช่องหมายเหตุ
+            if (data.cancelReason) {
+                document.getElementById('notes').value = "เหตุผลตีกลับ: " + data.cancelReason;
+            }
+
             document.getElementById('successAlertBox').classList.add('d-none');
             document.getElementById('errorAlertBox').classList.add('d-none');
 
             if (data.shopName && data.orderId) {
                 document.getElementById('successAlertBox').classList.remove('d-none');
-                document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value}</b> ในข้อมูล TikTok · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
-            } else if (data.platform === "TikTok" && document.getElementById('tracking').value) {
+                document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value || data.orderId}</b> ในข้อมูล TikTok · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
+            } else if (data.platform === "TikTok" && (document.getElementById('tracking').value || document.getElementById('orderId').value)) {
                 document.getElementById('errorAlertBox').classList.remove('d-none');
             }
-            // ใส่เพิ่มเข้าไปในฟังก์ชัน updateUIWithData(data)
-if (data.cancelReason) {
-    document.getElementById('notes').value = "เหตุผลตีกลับ: " + data.cancelReason;
-}
         }
 
         function handleImageUpload(event, type) {
@@ -664,14 +661,24 @@ if (data.cancelReason) {
             finally { document.getElementById('analyzeLoading').style.display = 'none'; }
         }
 
+        // ✅ อัปเดต: ให้ส่งทั้งเลขพัสดุและเลขออเดอร์ไปให้ API ค้นหา
         async function manualCheckAPI() {
             const trackingInput = document.getElementById('tracking').value;
-            if(!trackingInput) return alert("กรุณากรอกเลขพัสดุก่อนตรวจสอบ");
+            const orderIdInput = document.getElementById('orderId').value;
+            const platformInput = document.getElementById('platform').value;
+
+            if(!trackingInput && !orderIdInput) return alert("กรุณากรอกเลขพัสดุ หรือ เลขคำสั่งซื้อ ก่อนตรวจสอบ");
 
             const btn = document.getElementById('checkApiText');
             btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังค้นหา...';
             
-            const payload = { action: "analyze", manualTracking: trackingInput };
+            const payload = { 
+                action: "analyze", 
+                manualTracking: trackingInput, 
+                manualOrderId: orderIdInput,
+                platform: platformInput 
+            };
+            
             try {
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
