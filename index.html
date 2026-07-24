@@ -284,6 +284,8 @@
                                 <div id="type-ลูกค้าคืนสินค้า" class="return-type-box" onclick="selectReturnType('ลูกค้าคืนสินค้า')">ลูกค้าคืนสินค้า</div>
                             </div>
                             <input type="hidden" id="returnType" value="">
+                            
+                            <div style="height: 120px; width: 100%;"></div>
                         </div>
                     </div>
 
@@ -334,6 +336,8 @@
                             
                             <label class="form-label fw-bold">หมายเหตุ (ถ้ามี):</label>
                             <textarea id="notes" class="form-control bg-light border-0" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
+                            
+                            <div style="height: 120px; width: 100%;"></div>
                         </div>
                     </div>
                 </div>
@@ -398,12 +402,10 @@
                                 <small class="text-muted d-block mb-1">ร้านค้า</small>
                                 <span class="fw-bold text-dark" id="detailShop">-</span>
                             </div>
-                            <!-- เพิ่มบล็อกข้อมูลสินค้าเข้าไปตรงนี้ -->
                             <div class="col-12 border-bottom">
                                 <small class="text-muted d-block mb-1">ข้อมูลสินค้า</small>
                                 <span class="fw-bold text-dark text-break" id="detailProductDetails">-</span>
                             </div>
-                            <!-- ------------------------- -->
                             <div class="col-12">
                                 <small class="text-muted d-block mb-1">วันเวลาที่รับ</small>
                                 <span class="fw-bold text-dark" id="detailDate">-</span>
@@ -583,7 +585,8 @@
             if (data.orderId) document.getElementById('orderId').value = data.orderId;
             if (data.shopName) document.getElementById('shopName').value = data.shopName;
             
-            // ไม่ใช้ค่ารอตรวจสอบ ให้เลือกให้เลย
+            if (data.productDetails) document.getElementById('productDetails').value = data.productDetails;
+            
             if (data.returnType && data.returnType !== "รอตรวจสอบ") {
                 selectReturnType(data.returnType);
             }
@@ -718,7 +721,7 @@
                 finalCondition: document.getElementById('finalCondition').value,
                 notes: document.getElementById('notes').value,
                 shopName: document.getElementById('shopName').value,
-                productDetails: document.getElementById('productDetails').value // ✅ ส่งข้อมูลสินค้า
+                productDetails: document.getElementById('productDetails').value 
             };
 
             try {
@@ -770,7 +773,7 @@
             document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
             document.getElementById('detailOrderId').innerText = item.orderId;
             document.getElementById('detailShop').innerText = item.shopName || item.platform;
-            document.getElementById('detailProductDetails').innerText = item.productDetails || "-"; // ✅ โชว์ข้อมูลสินค้า
+            document.getElementById('detailProductDetails').innerText = item.productDetails || "-";
             document.getElementById('detailDate').innerText = item.date;
             document.getElementById('detailNotes').innerText = item.notes;
 
