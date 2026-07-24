@@ -589,6 +589,10 @@
             } else if (data.platform === "TikTok" && document.getElementById('tracking').value) {
                 document.getElementById('errorAlertBox').classList.remove('d-none');
             }
+            // ใส่เพิ่มเข้าไปในฟังก์ชัน updateUIWithData(data)
+if (data.cancelReason) {
+    document.getElementById('notes').value = "เหตุผลตีกลับ: " + data.cancelReason;
+}
         }
 
         function handleImageUpload(event, type) {
