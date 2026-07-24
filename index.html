@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* ดันเนื้อหาในแต่ละหน้าไม่ให้โดนปุ่มด้านล่างบัง */
+.wizard-step {
+    padding-bottom: 110px !important;
+}
         :root {
             --primary-green: #295743;
             --primary-green-hover: #1e4031;
@@ -281,6 +285,7 @@
                             <!-- ปลดล็อก readonly ออก ให้พิมพ์เองได้เลย -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
                             <input type="text" id="shopName" class="form-control mb-2" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
+                            
                         </div>
                     </div>
 
