@@ -119,11 +119,13 @@
         .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
         .notes-box { background-color: #f3efe6; border-radius: 10px; }
 
-        .btn-platform { border-radius: 8px; font-weight: 500; border: none; padding: 10px 12px; flex: 1; text-align: center; color: white; opacity: 0.4; transition: all 0.2s; font-size: 14px; }
+        /* จัดการสไตล์ปุ่มแพลตฟอร์ม */
+        .btn-platform { border-radius: 8px; font-weight: 500; border: none; padding: 10px 5px; flex: 1; text-align: center; color: white; opacity: 0.4; transition: all 0.2s; font-size: 14px; }
         .btn-platform.active { opacity: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .platform-lazada { background-color: #845ef7; } 
         .platform-shopee { background-color: #ff8c72; } 
         .platform-tiktok { background-color: #212529; } 
+        .platform-manual { background-color: #28a745; } /* สีเขียวสำหรับลูกค้าส่งเอง */
 
         .return-type-box { border: 1px solid #ced4da; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; background: #fff; transition: all 0.2s; color: #6c757d; font-weight: 500; font-size: 14px; }
         .return-type-box.active { border: 1px solid #2d6a4f; background-color: #e9f5ec; color: #1b4332; font-weight: bold; }
@@ -243,7 +245,7 @@
                         </div>
 
                         <div id="errorAlertBox" class="alert mb-3 d-none text-danger" style="background-color: #fdf3f4; border: 1px solid #f5c6cb; border-radius: 8px; font-size: 13px;">
-                            ⚠️ สแกนเจอเลขพัสดุ แต่ตรวจสอบไม่พบใน 3 ร้านค้าของเรา
+                            ⚠️ สแกนเจอเลขพัสดุ แต่ตรวจสอบไม่พบในระบบ
                         </div>
 
                         <div id="successAlertBox" class="alert mb-3 d-none" style="background-color: #e9f5ec; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724; font-size: 13px;">
@@ -252,12 +254,18 @@
 
                         <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
                             <label class="form-label fw-bold" style="font-size: 14px;">แพลตฟอร์ม</label>
-                            <div class="d-flex gap-2 mb-3" id="platformGroup">
+                            
+                            <!-- ปรับปุ่มแพลตฟอร์มให้มี 4 ปุ่ม -->
+                            <div class="d-flex gap-2 mb-3 flex-wrap" id="platformGroup">
                                 <button type="button" id="btn-Lazada" class="btn-platform platform-lazada" onclick="selectPlatform('Lazada')">Lazada</button>
                                 <button type="button" id="btn-Shopee" class="btn-platform platform-shopee" onclick="selectPlatform('Shopee')">Shopee</button>
                                 <button type="button" id="btn-TikTok" class="btn-platform platform-tiktok active" onclick="selectPlatform('TikTok')">✓ TikTok</button>
+                                <button type="button" id="btn-ลูกค้าส่งเอง" class="btn-platform platform-manual" onclick="selectPlatform('ลูกค้าส่งเอง')">ลูกค้าส่งเอง</button>
                             </div>
                             <input type="hidden" id="platform" value="TikTok">
+
+                            <!-- กล่องแจ้งเตือนสีเหลือง โหมดกรอกมือ (Manual) -->
+                            <div id="manualAlertBox" class="alert mb-3" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; font-size: 13px; border-radius: 8px; display: none;"></div>
 
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขพัสดุ / เลขคืนสินค้า <span class="text-danger">*</span></label>
                             <input type="text" id="tracking" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="สแกนหรือพิมพ์เลขพัสดุ">
@@ -425,7 +433,6 @@
     <!-- Javascript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ⚠️ สำคัญ: นำลิงก์ Web App URL ชุดใหม่มาใส่ที่นี่
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwKIdETJsBJvhCffm5cdOKxlgNrxyKdNYRovSM39Xd44ywk4bfg2AejPZZgGv-aX80b/exec";
 
         let boxImageBase64 = "", productImageBase64 = "", videoBase64Data = "", videoMimeType = "";
@@ -470,7 +477,7 @@
         }
 
         function getPlatformClass(platform) {
-            let p = platform.toLowerCase();
+            let p = (platform || "").toLowerCase();
             if(p.includes('tiktok')) return 'tag-tiktok';
             if(p.includes('shopee')) return 'tag-shopee';
             if(p.includes('lazada')) return 'tag-lazada';
@@ -561,47 +568,36 @@
 
         function prevStep() { if(currentStep > 1) { currentStep--; updateWizardUI(); } }
 
-       function selectPlatform(platformName) {
+        // ฟังก์ชันใหม่ที่รวมโหมดกรอกมือ (Manual) เรียบร้อยแล้ว
+        function selectPlatform(platformName) {
             document.querySelectorAll('.btn-platform').forEach(btn => {
-                btn.classList.remove('active'); btn.innerText = btn.innerText.replace('✓ ', '');
+                btn.classList.remove('active'); 
+                btn.innerText = btn.innerText.replace('✓ ', '');
             });
             const activeBtn = document.getElementById('btn-' + platformName);
             if(activeBtn) { activeBtn.classList.add('active'); activeBtn.innerText = '✓ ' + platformName; }
             document.getElementById('platform').value = platformName;
 
-            // 👇 โค้ดที่เพิ่มใหม่สำหรับจัดการโหมด Manual ของ Shopee
             const checkApiBtn = document.querySelector('.btn-check-api');
             let manualAlertBox = document.getElementById('manualAlertBox');
 
-            if (platformName === 'Shopee') {
-                // ซ่อนปุ่มเช็ค API
-                checkApiBtn.style.display = 'none'; 
+            if (platformName === 'Shopee' || platformName === 'ลูกค้าส่งเอง') {
+                if(checkApiBtn) checkApiBtn.style.display = 'none'; 
                 
-                // สร้างกล่องแจ้งเตือนสีเหลือง (ถ้ายังไม่มี)
-                if(!manualAlertBox) {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.id = 'manualAlertBox';
-                    alertDiv.className = 'alert mb-3';
-                    alertDiv.style.backgroundColor = '#fff3cd';
-                    alertDiv.style.border = '1px solid #ffeeba';
-                    alertDiv.style.color = '#856404';
-                    alertDiv.style.fontSize = '13px';
-                    alertDiv.style.borderRadius = '8px';
-                    alertDiv.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" และเลือกประเภทการรับคืนด้วยตนเอง';
-                    
-                    // แทรกกล่องนี้ไว้ใต้ปุ่มเลือกแพลตฟอร์ม
-                    document.getElementById('platformGroup').insertAdjacentElement('afterend', alertDiv);
-                } else {
+                if(manualAlertBox) {
                     manualAlertBox.style.display = 'block';
+                    if (platformName === 'Shopee') {
+                        manualAlertBox.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" ด้วยตนเอง';
+                    } else {
+                        manualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
+                    }
                 }
                 
-                // ซ่อนกล่องแจ้งเตือน API อื่นๆ
                 document.getElementById('errorAlertBox').classList.add('d-none');
                 document.getElementById('successAlertBox').classList.add('d-none');
                 
             } else {
-                // ถ้าเป็น TikTok หรือ Lazada ให้แสดงปุ่ม API เหมือนเดิม
-                checkApiBtn.style.display = 'block'; 
+                if(checkApiBtn) checkApiBtn.style.display = 'block'; 
                 if(manualAlertBox) manualAlertBox.style.display = 'none';
             }
         }
