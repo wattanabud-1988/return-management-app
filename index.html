@@ -266,21 +266,22 @@
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
                             <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์เลขออเดอร์ หรือรอตรวจสอบ...">
 
-                            <!-- ปรับปุ่มให้เรียก manualCheckAPI ที่ส่งค่า orderId ไปด้วย -->
+                            <!-- ปุ่มตรวจสอบ API -->
                             <button type="button" class="btn w-100 mb-4 btn-check-api py-2" onclick="manualCheckAPI()">
                                 <span id="checkApiText">🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน</span>
                             </button>
 
+                            <!-- ✅ ย้ายช่องร้านค้ามาไว้ตรงนี้ (ต่อจากปุ่มค้นหา) -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
+                            <input type="text" id="shopName" class="form-control mb-4" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
+
+                            <!-- ✅ ลบแท็บรอตรวจสอบออก เหลือแค่ 2 หมวดหมู่ -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ประเภทการรับคืน</label>
-                            <div class="d-flex flex-column gap-2 mb-3" id="returnTypeGroup">
+                            <div class="d-flex flex-column gap-2 mb-2" id="returnTypeGroup">
                                 <div id="type-สินค้าตีกลับ" class="return-type-box" onclick="selectReturnType('สินค้าตีกลับ')">สินค้าตีกลับ</div>
                                 <div id="type-ลูกค้าคืนสินค้า" class="return-type-box" onclick="selectReturnType('ลูกค้าคืนสินค้า')">ลูกค้าคืนสินค้า</div>
-                                <div id="type-รอตรวจสอบ" class="return-type-box active" onclick="selectReturnType('รอตรวจสอบ')">✓ รอตรวจสอบ</div>
                             </div>
-                            <input type="hidden" id="returnType" value="รอตรวจสอบ">
-
-                            <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
-                            <input type="text" id="shopName" class="form-control mb-2" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
+                            <input type="hidden" id="returnType" value="">
                             
                         </div>
                     </div>
