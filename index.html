@@ -119,7 +119,6 @@
         .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
         .notes-box { background-color: #f3efe6; border-radius: 10px; }
 
-        /* สไตล์ปุ่มกดหน้า Step 2 */
         .btn-platform { border-radius: 8px; font-weight: 500; border: none; padding: 10px 12px; flex: 1; text-align: center; color: white; opacity: 0.4; transition: all 0.2s; font-size: 14px; }
         .btn-platform.active { opacity: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .platform-lazada { background-color: #845ef7; } 
@@ -235,7 +234,7 @@
                         </div>
                     </div>
 
-                   <!-- Step 2: ข้อมูล OCR -->
+                    <!-- Step 2: ข้อมูล OCR -->
                     <div id="step2" class="wizard-step d-none">
                         <div class="info-box mb-2"><i class="bi bi-robot"></i><div><h6>ตรวจสอบข้อมูลอัตโนมัติ</h6><p>ระบบ AI จะพยายามอ่านข้อมูล กรุณาตรวจสอบ</p></div></div>
                         
@@ -266,11 +265,14 @@
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
                             <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์เลขออเดอร์ หรือรอตรวจสอบ...">
 
-                            <!-- ✅ ย้ายช่องร้านค้าขึ้นมาต่อตรงนี้เลย (ก่อนปุ่มกด) -->
+                            <!-- ช่องร้านค้า และ ข้อมูลสินค้า -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
-                            <input type="text" id="shopName" class="form-control mb-4" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
+                            <input type="text" id="shopName" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
 
-                            <!-- ปุ่มตรวจสอบ API ถูกดันลงมาตรงนี้ -->
+                            <label class="form-label fw-bold" style="font-size: 14px;">ข้อมูลสินค้าที่ส่งคืน</label>
+                            <textarea id="productDetails" class="form-control mb-4" style="border-radius: 8px; font-size: 15px;" rows="2" placeholder="ระบุชื่อสินค้า, รุ่น, หรือจำนวน..."></textarea>
+
+                            <!-- ปุ่มตรวจสอบ API -->
                             <button type="button" class="btn w-100 mb-4 btn-check-api py-2" onclick="manualCheckAPI()">
                                 <span id="checkApiText">🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน</span>
                             </button>
@@ -282,7 +284,6 @@
                                 <div id="type-ลูกค้าคืนสินค้า" class="return-type-box" onclick="selectReturnType('ลูกค้าคืนสินค้า')">ลูกค้าคืนสินค้า</div>
                             </div>
                             <input type="hidden" id="returnType" value="">
-                            
                         </div>
                     </div>
 
@@ -397,6 +398,12 @@
                                 <small class="text-muted d-block mb-1">ร้านค้า</small>
                                 <span class="fw-bold text-dark" id="detailShop">-</span>
                             </div>
+                            <!-- เพิ่มบล็อกข้อมูลสินค้าเข้าไปตรงนี้ -->
+                            <div class="col-12 border-bottom">
+                                <small class="text-muted d-block mb-1">ข้อมูลสินค้า</small>
+                                <span class="fw-bold text-dark text-break" id="detailProductDetails">-</span>
+                            </div>
+                            <!-- ------------------------- -->
                             <div class="col-12">
                                 <small class="text-muted d-block mb-1">วันเวลาที่รับ</small>
                                 <span class="fw-bold text-dark" id="detailDate">-</span>
@@ -575,9 +582,12 @@
             document.getElementById('tracking').value = data.tracking || document.getElementById('tracking').value;
             if (data.orderId) document.getElementById('orderId').value = data.orderId;
             if (data.shopName) document.getElementById('shopName').value = data.shopName;
-            if (data.returnType) selectReturnType(data.returnType);
+            
+            // ไม่ใช้ค่ารอตรวจสอบ ให้เลือกให้เลย
+            if (data.returnType && data.returnType !== "รอตรวจสอบ") {
+                selectReturnType(data.returnType);
+            }
 
-            // ใส่เหตุผลการตีกลับอัตโนมัติในช่องหมายเหตุ
             if (data.cancelReason) {
                 document.getElementById('notes').value = "เหตุผลตีกลับ: " + data.cancelReason;
             }
@@ -662,7 +672,6 @@
             finally { document.getElementById('analyzeLoading').style.display = 'none'; }
         }
 
-        // ✅ อัปเดต: ให้ส่งทั้งเลขพัสดุและเลขออเดอร์ไปให้ API ค้นหา
         async function manualCheckAPI() {
             const trackingInput = document.getElementById('tracking').value;
             const orderIdInput = document.getElementById('orderId').value;
@@ -708,7 +717,8 @@
                 aiCondition: document.getElementById('returnType').value,
                 finalCondition: document.getElementById('finalCondition').value,
                 notes: document.getElementById('notes').value,
-                shopName: document.getElementById('shopName').value
+                shopName: document.getElementById('shopName').value,
+                productDetails: document.getElementById('productDetails').value // ✅ ส่งข้อมูลสินค้า
             };
 
             try {
@@ -760,6 +770,7 @@
             document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
             document.getElementById('detailOrderId').innerText = item.orderId;
             document.getElementById('detailShop').innerText = item.shopName || item.platform;
+            document.getElementById('detailProductDetails').innerText = item.productDetails || "-"; // ✅ โชว์ข้อมูลสินค้า
             document.getElementById('detailDate').innerText = item.date;
             document.getElementById('detailNotes').innerText = item.notes;
 
