@@ -586,10 +586,8 @@
                 
                 if(manualAlertBox) {
                     manualAlertBox.style.display = 'block';
-                    if (platformName === 'Shopee') {
-                        manualAlertBox.innerHTML = '📝 <b>Shopee (โหมดกรอกเอง):</b> กรุณาพิมพ์ "เลขคำสั่งซื้อ", "ชื่อร้าน", "ข้อมูลสินค้า" ด้วยตนเอง';
-                    } else {
-                        manualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
+                    if (platformName === 'ลูกค้าส่งเอง') {
+                        mmanualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
                     }
                 }
                 
