@@ -568,6 +568,7 @@
 
         function prevStep() { if(currentStep > 1) { currentStep--; updateWizardUI(); } }
 
+        
         // ฟังก์ชันใหม่ที่รวมโหมดกรอกมือ (Manual) เรียบร้อยแล้ว
         function selectPlatform(platformName) {
             document.querySelectorAll('.btn-platform').forEach(btn => {
@@ -581,20 +582,21 @@
             const checkApiBtn = document.querySelector('.btn-check-api');
             let manualAlertBox = document.getElementById('manualAlertBox');
 
-            if (platformName === 'Shopee' || platformName === 'ลูกค้าส่งเอง') {
+            // 🛠️ แก้ไข: เอา Shopee ออกจากเงื่อนไขซ่อนปุ่ม ให้เหลือแค่ 'ลูกค้าส่งเอง' ที่ต้องกรอกมือ
+            if (platformName === 'ลูกค้าส่งเอง') {
                 if(checkApiBtn) checkApiBtn.style.display = 'none'; 
                 
                 if(manualAlertBox) {
                     manualAlertBox.style.display = 'block';
-                    if (platformName === 'ลูกค้าส่งเอง') {
-                        mmanualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
-                    }
+                    // แก้ไขตัวพิมพ์ผิดจาก mmanualAlertBox เป็น manualAlertBox
+                    manualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
                 }
                 
                 document.getElementById('errorAlertBox').classList.add('d-none');
                 document.getElementById('successAlertBox').classList.add('d-none');
                 
             } else {
+                // 🟢 สำหรับ Lazada, TikTok และ Shopee (โหมด API/Sheet) ให้แสดงปุ่มค้นหา
                 if(checkApiBtn) checkApiBtn.style.display = 'block'; 
                 if(manualAlertBox) manualAlertBox.style.display = 'none';
             }
