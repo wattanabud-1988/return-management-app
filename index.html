@@ -632,8 +632,10 @@
 
             if (data.shopName && data.orderId) {
                 document.getElementById('successAlertBox').classList.remove('d-none');
-                document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value || data.orderId}</b> ในข้อมูล TikTok · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
-            } else if (data.platform === "TikTok" && (document.getElementById('tracking').value || document.getElementById('orderId').value)) {
+                // 🛠️ แก้ไข 1: ดึงชื่อแพลตฟอร์มมาแสดงแบบไดนามิกด้วย ${data.platform}
+                document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value || data.orderId}</b> ในข้อมูล <b>${data.platform}</b> · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
+            } else if (document.getElementById('tracking').value || document.getElementById('orderId').value) {
+                // 🛠️ แก้ไข 2: ลบเงื่อนไข data.platform === "TikTok" ออก เพื่อให้แจ้งเตือนสีแดงทำงานได้ทุกแพลตฟอร์มเวลาหาไม่เจอ
                 document.getElementById('errorAlertBox').classList.remove('d-none');
             }
         }
