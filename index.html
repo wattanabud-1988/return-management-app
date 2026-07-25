@@ -132,6 +132,22 @@
         
         .btn-check-api { background-color: #e9f5ec; border: 1px solid #2d6a4f; color: #1b4332; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.2s; }
         .btn-check-api:hover { background-color: #d8eadc; }
+
+        /* ✅ CSS ใหม่สำหรับปุ่มลบรายการ */
+        .btn-delete-record {
+            background-color: #fdf3f4;
+            color: #d9534f;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-delete-record:hover { background-color: #f8d7da; }
     </style>
 </head>
 <body>
@@ -421,10 +437,18 @@
                         </div>
                     </div>
                     
-                    <div class="notes-box p-3 shadow-sm">
+                    <div class="notes-box p-3 shadow-sm mb-4">
                         <small class="fw-bold d-block mb-1 text-dark">หมายเหตุการตรวจสภาพ</small>
                         <small class="text-secondary" id="detailNotes">-</small>
                     </div>
+
+                    <!-- ✅ เพิ่มปุ่มลบตรงนี้ -->
+                    <div class="text-end mt-2">
+                        <button class="btn-delete-record" id="btnDeleteRecord" onclick="deleteCurrentRecord()">
+                            <i class="bi bi-trash3"></i> ลบรายการนี้
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -441,6 +465,9 @@
         const totalSteps = 5;
         let wizardModalInstance = null;
         let ocrTriggered = false;
+        
+        // ✅ เพิ่มตัวแปรสำหรับจำเลขแถวที่เปิดดูอยู่
+        let currentDetailRowId = null; 
 
         function switchTab(tabId, element) {
             document.getElementById('dashboardView').classList.add('d-none');
@@ -569,7 +596,6 @@
         function prevStep() { if(currentStep > 1) { currentStep--; updateWizardUI(); } }
 
         
-        // ฟังก์ชันใหม่ที่รวมโหมดกรอกมือ (Manual) เรียบร้อยแล้ว
         function selectPlatform(platformName) {
             document.querySelectorAll('.btn-platform').forEach(btn => {
                 btn.classList.remove('active'); 
@@ -582,13 +608,11 @@
             const checkApiBtn = document.querySelector('.btn-check-api');
             let manualAlertBox = document.getElementById('manualAlertBox');
 
-            // 🛠️ แก้ไข: เอา Shopee ออกจากเงื่อนไขซ่อนปุ่ม ให้เหลือแค่ 'ลูกค้าส่งเอง' ที่ต้องกรอกมือ
             if (platformName === 'ลูกค้าส่งเอง') {
                 if(checkApiBtn) checkApiBtn.style.display = 'none'; 
                 
                 if(manualAlertBox) {
                     manualAlertBox.style.display = 'block';
-                    // แก้ไขตัวพิมพ์ผิดจาก mmanualAlertBox เป็น manualAlertBox
                     manualAlertBox.innerHTML = '📦 <b>ลูกค้าส่งเอง (ไม่มีในระบบ):</b> กรุณากรอก "เลขพัสดุ", "ชื่อร้าน" และ "ข้อมูลสินค้า" ด้วยตนเอง';
                 }
                 
@@ -596,7 +620,6 @@
                 document.getElementById('successAlertBox').classList.add('d-none');
                 
             } else {
-                // 🟢 สำหรับ Lazada, TikTok และ Shopee (โหมด API/Sheet) ให้แสดงปุ่มค้นหา
                 if(checkApiBtn) checkApiBtn.style.display = 'block'; 
                 if(manualAlertBox) manualAlertBox.style.display = 'none';
             }
@@ -632,10 +655,8 @@
 
             if (data.shopName && data.orderId) {
                 document.getElementById('successAlertBox').classList.remove('d-none');
-                // 🛠️ แก้ไข 1: ดึงชื่อแพลตฟอร์มมาแสดงแบบไดนามิกด้วย ${data.platform}
                 document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value || data.orderId}</b> ในข้อมูล <b>${data.platform}</b> · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
             } else if (document.getElementById('tracking').value || document.getElementById('orderId').value) {
-                // 🛠️ แก้ไข 2: ลบเงื่อนไข data.platform === "TikTok" ออก เพื่อให้แจ้งเตือนสีแดงทำงานได้ทุกแพลตฟอร์มเวลาหาไม่เจอ
                 document.getElementById('errorAlertBox').classList.remove('d-none');
             }
         }
@@ -779,8 +800,11 @@
             return match ? match[1] : null;
         }
 
+        // ✅ อัปเดตฟังก์ชัน ให้จำเลขแถว (Row ID) ก่อนเปิด Pop-up
         function openDetail(index) {
             const item = globalRecords[index];
+            currentDetailRowId = item.rowId; // สำคัญ: เก็บค่าแถวของรายการไว้ใช้ตอนจะลบ
+            
             document.getElementById('detailTracking').innerText = item.tracking;
             document.getElementById('detailPlatform').innerText = item.platform;
             
@@ -812,6 +836,43 @@
             document.getElementById('detailNotes').innerText = item.notes;
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+
+        // ✅ ฟังก์ชันสำหรับปุ่มลบรายการที่กำลังเปิดดูอยู่
+        async function deleteCurrentRecord() {
+            if (!currentDetailRowId) return;
+            
+            if (confirm("คุณแน่ใจหรือไม่ที่จะลบรายการนี้? ข้อมูลจะถูกลบออกจากระบบทันที")) {
+                const btn = document.getElementById('btnDeleteRecord');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังลบ...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch(WEB_APP_URL, { 
+                        method: 'POST', 
+                        body: JSON.stringify({ action: "delete", rowId: currentDetailRowId }) 
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === "success") {
+                        // ซ่อน Modal เมื่อลบเสร็จ
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('detailModal'));
+                        modal.hide();
+                        
+                        // รีเฟรชหน้าประวัติใหม่ให้เห็นว่าลบไปแล้ว
+                        document.getElementById('recordsList').innerHTML = '<div class="text-center text-muted my-4"><div class="spinner-border spinner-border-sm text-success mb-2"></div><br>กำลังดึงข้อมูล...</div>';
+                        fetchRecords();
+                    } else {
+                        alert("❌ เกิดข้อผิดพลาด: " + result.message);
+                    }
+                } catch (error) {
+                    alert("❌ การเชื่อมต่อขัดข้อง: " + error.message);
+                } finally {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+            }
         }
 
         document.getElementById('detailModal').addEventListener('hidden.bs.modal', function () { document.getElementById('detailVideoFrame').src = ''; });
