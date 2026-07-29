@@ -256,7 +256,10 @@
                     <!-- Step 2: ข้อมูล OCR -->
                     <div id="step2" class="wizard-step d-none">
                         <div class="info-box mb-2"><i class="bi bi-robot"></i><div><h6>ตรวจสอบข้อมูลอัตโนมัติ</h6><p>ระบบ AI จะพยายามอ่านข้อมูล กรุณาตรวจสอบ</p></div></div>
-                        
+                        <!-- ✅ ปุ่มกดให้ AI อ่านรูปภาพ (เพิ่มใหม่) -->
+                        <button type="button" id="btnTriggerAI" class="btn w-100 mb-3 shadow-sm" style="background-color: #f1c75b; color: #2d302e; font-weight: bold; border-radius: 8px; border: none; padding: 10px;" onclick="triggerAI()">
+                            <i class="bi bi-magic me-1"></i> สแกนข้อมูลจากรูปกล่องด้วย AI
+                        </button>
                         <div id="analyzeLoading" class="text-center text-success my-3 fw-bold" style="display: none; font-size: 14px;">
                             <div class="spinner-border spinner-border-sm" role="status"></div> กำลังอ่านข้อความ...
                         </div>
@@ -719,16 +722,32 @@
             reader.readAsDataURL(file);
         }
 
+       // ✅ ฟังก์ชันสำหรับปุ่มกด AI
+        function triggerAI() {
+            if (!boxImageBase64) return alert("ไม่พบรูปภาพ กรุณาย้อนกลับไปถ่ายรูปหน้ากล่องก่อนครับ");
+            analyzeBoxImage(boxImageBase64);
+        }
+
         async function analyzeBoxImage(base64Data) {
             document.getElementById('analyzeLoading').style.display = 'block';
-            const payload = { action: "analyze", imageBase64: base64Data };
+            document.getElementById('btnTriggerAI').style.display = 'none'; // ซ่อนปุ่มตอนกำลังโหลด
+            
+            // ดึงแพลตฟอร์มที่คุณกดเลือกไว้ส่งไปให้หลังบ้านด้วย
+            const selectedPlatform = document.getElementById('platform').value;
+            const payload = { action: "analyze", imageBase64: base64Data, platform: selectedPlatform };
+            
             try {
                 document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังสแกนพัสดุและค้นหาร้านค้า...';
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (result.status === "success") { updateUIWithData(JSON.parse(result.text)); }
-            } catch (error) { console.error("OCR Error:", error); } 
-            finally { document.getElementById('analyzeLoading').style.display = 'none'; }
+            } catch (error) { 
+                console.error("OCR Error:", error); 
+                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ หรืออ่านรูปภาพ");
+            } finally { 
+                document.getElementById('analyzeLoading').style.display = 'none'; 
+                document.getElementById('btnTriggerAI').style.display = 'block'; // แสดงปุ่มกลับมาเมื่อเสร็จ
+            }
         }
 
         async function manualCheckAPI() {
