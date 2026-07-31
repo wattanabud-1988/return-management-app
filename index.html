@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ไลบรารีอ่าน QR Code / บาร์โค้ด -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <!-- เปลี่ยนเป็น ZXing Engine ที่แม่นยำกว่าเดิม -->
+    <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
     <title>ReturnFlow - ระบบรับสินค้าคืน</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -135,6 +135,12 @@
         .btn-check-api { background-color: #e9f5ec; border: 1px solid #2d6a4f; color: #1b4332; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.2s; }
         .btn-check-api:hover { background-color: #d8eadc; }
 
+         /* CSS สำหรับ Checkbox สถานะตรวจแล้ว */
+        .custom-checkbox { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary-green); }
+        .list-item.checked-item { background-color: #f2f2f2; opacity: 0.7; border-color: #e0e0e0; }
+        .list-item.checked-item h6 { text-decoration: line-through; color: #888; }
+        .list-item.checked-item .list-icon { background-color: #e0e0e0; }
+        
         /* CSS สำหรับปุ่มลบรายการ */
         .btn-delete-record {
             background-color: #fdf3f4;
@@ -324,15 +330,26 @@
 
                     <!-- Step 3: วิดีโอ -->
                     <div id="step3" class="wizard-step d-none">
-                        <div class="info-box"><i class="bi bi-camera-video"></i><div><h6>บันทึกวิดีโอเปิดกล่อง</h6><p>ถ่ายวิดีโอต่อเนื่องขณะแกะกล่อง</p></div></div>
+                        <div class="info-box"><i class="bi bi-camera-video"></i><div><h6>บันทึกวิดีโอเปิดกล่อง</h6><p>ถ่ายวิดีโอ หรือ อัปโหลดวิดีโอที่ถ่ายไว้แล้ว</p></div></div>
                         <div class="upload-area" id="videoUploadArea">
                             <div class="upload-icon-circle" style="background: #dc3545;"><i class="bi bi-camera-video"></i></div>
-                            <h5 class="upload-title">ถ่ายวิดีโอตอนเปิดเช็คของ</h5>
+                            <h5 class="upload-title">เพิ่มวิดีโอเปิดเช็คของ</h5>
                             <video id="videoPreview" width="100%" controls class="upload-preview mb-3"></video>
                             <p id="videoFileName" class="text-muted small d-none mb-3"></p>
-                            <div>
-                                <button class="btn btn-danger px-4 py-2" onclick="document.getElementById('videoInput').click()"><i class="bi bi-camera-video me-2"></i> ถ่ายวิดีโอ</button>
-                                <input type="file" id="videoInput" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
+                            
+                            <!-- เพิ่มเป็น 2 ปุ่ม: ถ่ายวิดีโอ และ อัปโหลดไฟล์ -->
+                            <div class="d-flex justify-content-center gap-2">
+                                <!-- ปุ่มถ่ายใหม่ (บังคับเปิดกล้อง) -->
+                                <button class="btn btn-danger px-3 py-2" onclick="document.getElementById('videoInputCapture').click()">
+                                    <i class="bi bi-camera-video me-2"></i> ถ่ายสด
+                                </button>
+                                <input type="file" id="videoInputCapture" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
+                                
+                                <!-- ปุ่มอัปโหลด (เปิดจากอัลบั้ม) -->
+                                <button class="btn btn-outline-danger px-3 py-2" onclick="document.getElementById('videoInputUpload').click()">
+                                    <i class="bi bi-folder2-open me-2"></i> เลือกจากเครื่อง
+                                </button>
+                                <input type="file" id="videoInputUpload" accept="video/*" class="d-none" onchange="handleVideoUpload(event)">
                             </div>
                         </div>
                     </div>
@@ -529,9 +546,16 @@
             }
             let html = '';
             records.forEach((item, index) => {
+                // เช็คสถานะว่าถูกติ๊กไว้หรือยัง
+                let checkedClass = item.isChecked ? 'checked-item' : '';
+                let iconClass = item.isChecked ? 'bi bi-check-circle-fill text-success' : 'bi bi-box-seam';
+                
                 html += `
-                <div class="list-item" onclick="openDetail(${index})">
-                    <div class="list-icon"><i class="bi bi-box-seam"></i></div>
+                <div class="list-item ${checkedClass}" id="listItem-${index}" onclick="openDetail(${index})">
+                    <!-- กล่อง Checkbox -->
+                    <input type="checkbox" class="form-check-input custom-checkbox" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatus(${index}, this, event)">
+                    
+                    <div class="list-icon"><i class="${iconClass}"></i></div>
                     <div class="list-content">
                         <h6>${item.tracking}</h6>
                         <p>${item.date} • ${item.finalCondition}</p>
@@ -540,6 +564,30 @@
                 </div>`;
             });
             listContainer.innerHTML = html;
+        }
+
+        function toggleCheckStatus(index, checkboxEle, event) {
+            event.stopPropagation(); // หยุดไม่ให้มันเด้งเปิดหน้าต่าง Detail ซ้อนขึ้นมา
+            
+            const isChecked = checkboxEle.checked;
+            globalRecords[index].isChecked = isChecked;
+            
+            const listItem = document.getElementById('listItem-' + index);
+            const iconEle = listItem.querySelector('.list-icon i');
+            
+            if (isChecked) {
+                listItem.classList.add('checked-item');
+                iconEle.className = 'bi bi-check-circle-fill text-success';
+            } else {
+                listItem.classList.remove('checked-item');
+                iconEle.className = 'bi bi-box-seam';
+            }
+            
+            // ส่งข้อมูลไปบันทึกลง Google Sheet แบบเงียบๆ (ไม่ต้องรอโหลด)
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "toggleCheck", rowId: globalRecords[index].rowId, isChecked: isChecked })
+            });
         }
 
         function filterRecords() {
@@ -681,7 +729,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
+                    const MAX_WIDTH = 1000;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
@@ -730,7 +778,22 @@
             reader.readAsDataURL(file);
         }
 
-        // ✅ อัปเดตฟังก์ชันกดปุ่มสแกน ให้พยายามอ่าน QR Code และสกัดเฉพาะเลขพัสดุ
+        // ✅ 1. ฟังก์ชันช่วยสกัดเลขพัสดุ (แยกออกมาเพื่อให้โค้ดอ่านง่ายขึ้น)
+        function extractTrackingNumber(rawText) {
+            let upper = rawText.toUpperCase();
+            let jtMatch = upper.match(/JTTH\d{12}/);
+            let spxMatch = upper.match(/SPX[A-Z0-9]+/) || upper.match(/TH\d{10,14}V/); 
+            let lexMatch = upper.match(/LEXPU[A-Z0-9]+/);
+            let flashMatch = upper.match(/TH[A-Z0-9]{10,15}/); 
+            
+            if (jtMatch) return jtMatch[0];
+            if (spxMatch) return spxMatch[0];
+            if (lexMatch) return lexMatch[0];
+            if (flashMatch) return flashMatch[0];
+            return rawText.trim();
+        }
+
+        // ✅ ฟังก์ชันกดปุ่มสแกนใหม่ (ใช้ AI ชิปมือถือ Native + ZXing Engine)
         async function triggerAI() {
             if (!boxImageBase64) return alert("ไม่พบรูปภาพ กรุณาย้อนกลับไปถ่ายรูปหน้ากล่องก่อนครับ");
             
@@ -740,54 +803,70 @@
             document.getElementById('analyzeLoading').style.display = 'block';
             document.getElementById('btnTriggerAI').style.display = 'none';
 
-            let detectedBarcode = "";
-            try {
-                // พยายามอ่าน QR Code / Barcode จากรูปภาพ
-                if (boxImageFile) {
-                    const html5QrCode = new Html5Qrcode("reader");
-                    let rawQRText = await html5QrCode.scanFile(boxImageFile, false);
-                    console.log("ข้อมูลดิบจาก QR Code: ", rawQRText);
-                    
-                    // 🔍 สกัดเอาเฉพาะ "เลขพัสดุ" (เผื่อ QR Code เป็นรูปแบบ URL ยาวๆ)
-                    let qrUpper = rawQRText.toUpperCase();
-                    let jtMatch = qrUpper.match(/JTTH\d{12}/);
-                    let spxMatch = qrUpper.match(/SPX[A-Z0-9]+/) || qrUpper.match(/TH\d{10,14}V/); 
-                    let lexMatch = qrUpper.match(/LEXPU[A-Z0-9]+/);
-                    let flashMatch = qrUpper.match(/TH[A-Z0-9]{10,15}/); 
-                    
-                    if (jtMatch) detectedBarcode = jtMatch[0];
-                    else if (spxMatch) detectedBarcode = spxMatch[0];
-                    else if (lexMatch) detectedBarcode = lexMatch[0];
-                    else if (flashMatch) detectedBarcode = flashMatch[0];
-                    else detectedBarcode = rawQRText.trim(); 
-                    
-                    console.log("สกัดเลขพัสดุได้สำเร็จ: ", detectedBarcode);
+            let detectedTracking = "";
+
+            if (boxImageFile) {
+                // 🔹 ขั้นที่ 1: ใช้ Native BarcodeDetector (ใช้ AI ชิปของสมาร์ทโฟนโดยตรง - แม่นและเร็วที่สุด)
+                if ('BarcodeDetector' in window) {
+                    try {
+                        document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังสแกนด้วย AI มือถือ...';
+                        const detector = new BarcodeDetector({ 
+                            formats: ['qr_code', 'code_128', 'code_39', 'itf', 'data_matrix'] 
+                        });
+                        
+                        const img = new Image();
+                        img.src = URL.createObjectURL(boxImageFile);
+                        await img.decode();
+
+                        const barcodes = await detector.detect(img);
+                        if (barcodes && barcodes.length > 0) {
+                            detectedTracking = extractTrackingNumber(barcodes[0].rawValue);
+                            console.log("✅ Native Detector อ่านเจอ:", detectedTracking);
+                        }
+                    } catch (e) {
+                        console.log("Native Detector สแกนไม่ผ่าน ถอยไปใช้ ZXing...", e);
+                    }
                 }
-            } catch (err) {
-                console.log("อ่าน QR Code ไม่พบ, ใช้ AI อ่านตัวหนังสือแทน");
+
+                // 🔹 ขั้นที่ 2: ถ้า AI มือถืออ่านไม่ได้ ให้ใช้ ZXing Engine ช่วยแกะรอย
+                if (!detectedTracking && typeof ZXing !== 'undefined') {
+                    try {
+                        document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังใช้อัลกอริทึมวิเคราะห์ภาพ...';
+                        const codeReader = new ZXing.BrowserMultiFormatReader();
+                        const imgUrl = URL.createObjectURL(boxImageFile);
+                        const result = await codeReader.decodeFromImageUrl(imgUrl);
+                        if (result) {
+                            detectedTracking = extractTrackingNumber(result.getText());
+                            console.log("✅ ZXing Engine อ่านเจอ:", detectedTracking);
+                        }
+                    } catch (e) {
+                        console.log("ZXing สแกนไม่พบบาร์โค้ด/QR Code");
+                    }
+                }
             }
 
-            analyzeBoxImage(boxImageBase64, detectedBarcode);
+            // 🔹 ขั้นที่ 3: ส่งข้อมูลไปหลังบ้าน (ถ้าสแกนเจอเลขจะข้าม OCR แต่ถ้าไม่เจอ ค่อยส่งให้ AI อ่านข้อความ)
+            analyzeBoxImage(boxImageBase64, detectedTracking);
         }
 
-        // ✅ อัปเดตฟังก์ชันส่งข้อมูลไปหลังบ้าน โดยแนบเลขที่สกัดได้ไปด้วย
-        async function analyzeBoxImage(base64Data, detectedBarcode) {
+        // ✅ 3. ฟังก์ชันสื่อสารกับหลังบ้าน (Google Apps Script)
+        async function analyzeBoxImage(base64Data, detectedTracking) {
             const selectedPlatform = document.getElementById('platform').value;
             const payload = { 
                 action: "analyze", 
                 imageBase64: base64Data, 
                 platform: selectedPlatform,
-                barcodeTracking: detectedBarcode || "" 
+                barcodeTracking: detectedTracking || "" // ส่งเลขที่สแกนได้ไปให้หลังบ้าน
             };
             
             try {
-                document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังสแกนพัสดุและค้นหาร้านค้า...';
+                document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm text-success"></div> <span class="text-success">กำลังค้นหาข้อมูลพัสดุ...</span>';
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (result.status === "success") { updateUIWithData(JSON.parse(result.text)); }
             } catch (error) { 
-                console.error("OCR Error:", error); 
-                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ หรืออ่านรูปภาพ");
+                console.error("Server Error:", error); 
+                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองอีกครั้ง");
             } finally { 
                 document.getElementById('analyzeLoading').style.display = 'none'; 
                 document.getElementById('btnTriggerAI').style.display = 'block'; 
