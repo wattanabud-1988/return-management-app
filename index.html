@@ -135,6 +135,12 @@
         .btn-check-api { background-color: #e9f5ec; border: 1px solid #2d6a4f; color: #1b4332; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.2s; }
         .btn-check-api:hover { background-color: #d8eadc; }
 
+         /* CSS สำหรับ Checkbox สถานะตรวจแล้ว */
+        .custom-checkbox { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary-green); }
+        .list-item.checked-item { background-color: #f2f2f2; opacity: 0.7; border-color: #e0e0e0; }
+        .list-item.checked-item h6 { text-decoration: line-through; color: #888; }
+        .list-item.checked-item .list-icon { background-color: #e0e0e0; }
+        
         /* CSS สำหรับปุ่มลบรายการ */
         .btn-delete-record {
             background-color: #fdf3f4;
@@ -540,9 +546,16 @@
             }
             let html = '';
             records.forEach((item, index) => {
+                // เช็คสถานะว่าถูกติ๊กไว้หรือยัง
+                let checkedClass = item.isChecked ? 'checked-item' : '';
+                let iconClass = item.isChecked ? 'bi bi-check-circle-fill text-success' : 'bi bi-box-seam';
+                
                 html += `
-                <div class="list-item" onclick="openDetail(${index})">
-                    <div class="list-icon"><i class="bi bi-box-seam"></i></div>
+                <div class="list-item ${checkedClass}" id="listItem-${index}" onclick="openDetail(${index})">
+                    <!-- กล่อง Checkbox -->
+                    <input type="checkbox" class="form-check-input custom-checkbox" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatus(${index}, this, event)">
+                    
+                    <div class="list-icon"><i class="${iconClass}"></i></div>
                     <div class="list-content">
                         <h6>${item.tracking}</h6>
                         <p>${item.date} • ${item.finalCondition}</p>
@@ -551,6 +564,30 @@
                 </div>`;
             });
             listContainer.innerHTML = html;
+        }
+
+        function toggleCheckStatus(index, checkboxEle, event) {
+            event.stopPropagation(); // หยุดไม่ให้มันเด้งเปิดหน้าต่าง Detail ซ้อนขึ้นมา
+            
+            const isChecked = checkboxEle.checked;
+            globalRecords[index].isChecked = isChecked;
+            
+            const listItem = document.getElementById('listItem-' + index);
+            const iconEle = listItem.querySelector('.list-icon i');
+            
+            if (isChecked) {
+                listItem.classList.add('checked-item');
+                iconEle.className = 'bi bi-check-circle-fill text-success';
+            } else {
+                listItem.classList.remove('checked-item');
+                iconEle.className = 'bi bi-box-seam';
+            }
+            
+            // ส่งข้อมูลไปบันทึกลง Google Sheet แบบเงียบๆ (ไม่ต้องรอโหลด)
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "toggleCheck", rowId: globalRecords[index].rowId, isChecked: isChecked })
+            });
         }
 
         function filterRecords() {
