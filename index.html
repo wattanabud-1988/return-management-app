@@ -778,7 +778,22 @@
             reader.readAsDataURL(file);
         }
 
-        // ✅ อัปเดตฟังก์ชันกดปุ่มสแกน ให้พยายามอ่าน QR Code และสกัดเฉพาะเลขพัสดุ
+        // ✅ 1. ฟังก์ชันช่วยสกัดเลขพัสดุ (แยกออกมาเพื่อให้โค้ดอ่านง่ายขึ้น)
+        function extractTrackingNumber(rawText) {
+            let upper = rawText.toUpperCase();
+            let jtMatch = upper.match(/JTTH\d{12}/);
+            let spxMatch = upper.match(/SPX[A-Z0-9]+/) || upper.match(/TH\d{10,14}V/); 
+            let lexMatch = upper.match(/LEXPU[A-Z0-9]+/);
+            let flashMatch = upper.match(/TH[A-Z0-9]{10,15}/); 
+            
+            if (jtMatch) return jtMatch[0];
+            if (spxMatch) return spxMatch[0];
+            if (lexMatch) return lexMatch[0];
+            if (flashMatch) return flashMatch[0];
+            return rawText.trim();
+        }
+
+        // ✅ 2. ฟังก์ชันกดปุ่มสแกน (ทำงาน 3 ขั้นตอน: QR -> Barcode -> OCR)
         async function triggerAI() {
             if (!boxImageBase64) return alert("ไม่พบรูปภาพ กรุณาย้อนกลับไปถ่ายรูปหน้ากล่องก่อนครับ");
             
@@ -788,54 +803,64 @@
             document.getElementById('analyzeLoading').style.display = 'block';
             document.getElementById('btnTriggerAI').style.display = 'none';
 
-            let detectedBarcode = "";
-            try {
-                // พยายามอ่าน QR Code / Barcode จากรูปภาพ
-                if (boxImageFile) {
-                    const html5QrCode = new Html5Qrcode("reader");
-                    let rawQRText = await html5QrCode.scanFile(boxImageFile, false);
-                    console.log("ข้อมูลดิบจาก QR Code: ", rawQRText);
+            let detectedTracking = "";
+
+            if (boxImageFile) {
+                try {
+                    document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังค้นหา QR Code...';
                     
-                    // 🔍 สกัดเอาเฉพาะ "เลขพัสดุ" (เผื่อ QR Code เป็นรูปแบบ URL ยาวๆ)
-                    let qrUpper = rawQRText.toUpperCase();
-                    let jtMatch = qrUpper.match(/JTTH\d{12}/);
-                    let spxMatch = qrUpper.match(/SPX[A-Z0-9]+/) || qrUpper.match(/TH\d{10,14}V/); 
-                    let lexMatch = qrUpper.match(/LEXPU[A-Z0-9]+/);
-                    let flashMatch = qrUpper.match(/TH[A-Z0-9]{10,15}/); 
+                    // 🔍 ขั้นที่ 1: พยายามอ่านเฉพาะ QR Code ก่อน
+                    const qrScanner = new Html5Qrcode("reader", { formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ] });
+                    let rawQR = await qrScanner.scanFile(boxImageFile, false);
+                    detectedTracking = extractTrackingNumber(rawQR);
+                    console.log("✅ [Step 1] สแกนเจอจาก QR Code: ", detectedTracking);
                     
-                    if (jtMatch) detectedBarcode = jtMatch[0];
-                    else if (spxMatch) detectedBarcode = spxMatch[0];
-                    else if (lexMatch) detectedBarcode = lexMatch[0];
-                    else if (flashMatch) detectedBarcode = flashMatch[0];
-                    else detectedBarcode = rawQRText.trim(); 
-                    
-                    console.log("สกัดเลขพัสดุได้สำเร็จ: ", detectedBarcode);
+                } catch (errQR) {
+                    try {
+                        document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังอ่านบาร์โค้ด...';
+                        
+                        // 🔍 ขั้นที่ 2: ถ้าไม่เจอ QR ให้พยายามอ่านเฉพาะ Barcode แบบแท่ง (เช่น Code 128 ที่ขนส่งชอบใช้)
+                        const barcodeScanner = new Html5Qrcode("reader", { 
+                            formatsToSupport: [ 
+                                Html5QrcodeSupportedFormats.CODE_128, 
+                                Html5QrcodeSupportedFormats.CODE_39, 
+                                Html5QrcodeSupportedFormats.ITF 
+                            ] 
+                        });
+                        let rawBarcode = await barcodeScanner.scanFile(boxImageFile, false);
+                        detectedTracking = extractTrackingNumber(rawBarcode);
+                        console.log("✅ [Step 2] สแกนเจอจาก Barcode: ", detectedTracking);
+                        
+                    } catch (errBarcode) {
+                        console.log("❌ [Step 1 & 2] มองไม่เห็น QR/Barcode (อาจมีแสงสะท้อน) กำลังส่งให้ AI...");
+                    }
                 }
-            } catch (err) {
-                console.log("อ่าน QR Code ไม่พบ, ใช้ AI อ่านตัวหนังสือแทน");
             }
 
-            analyzeBoxImage(boxImageBase64, detectedBarcode);
+            // 🔍 ขั้นที่ 3: ส่งข้อมูลไปหาหลังบ้าน 
+            // - ถ้าเจอเลขจากชั้นที่ 1 หรือ 2 แล้ว: หลังบ้านจะเอาเลขไปค้น API เลยทันที (ข้าม OCR)
+            // - ถ้าหาไม่เจอเลย: หลังบ้านจะให้ AI (OCR) อ่านตัวหนังสือจากรูปแทน
+            analyzeBoxImage(boxImageBase64, detectedTracking);
         }
 
-        // ✅ อัปเดตฟังก์ชันส่งข้อมูลไปหลังบ้าน โดยแนบเลขที่สกัดได้ไปด้วย
-        async function analyzeBoxImage(base64Data, detectedBarcode) {
+        // ✅ 3. ฟังก์ชันสื่อสารกับหลังบ้าน (Google Apps Script)
+        async function analyzeBoxImage(base64Data, detectedTracking) {
             const selectedPlatform = document.getElementById('platform').value;
             const payload = { 
                 action: "analyze", 
                 imageBase64: base64Data, 
                 platform: selectedPlatform,
-                barcodeTracking: detectedBarcode || "" 
+                barcodeTracking: detectedTracking || "" // ส่งเลขที่สแกนได้ไปให้หลังบ้าน
             };
             
             try {
-                document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> กำลังสแกนพัสดุและค้นหาร้านค้า...';
+                document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm text-success"></div> <span class="text-success">กำลังค้นหาข้อมูลพัสดุ...</span>';
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
                 if (result.status === "success") { updateUIWithData(JSON.parse(result.text)); }
             } catch (error) { 
-                console.error("OCR Error:", error); 
-                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ หรืออ่านรูปภาพ");
+                console.error("Server Error:", error); 
+                alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองอีกครั้ง");
             } finally { 
                 document.getElementById('analyzeLoading').style.display = 'none'; 
                 document.getElementById('btnTriggerAI').style.display = 'block'; 
