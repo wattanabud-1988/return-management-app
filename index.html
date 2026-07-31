@@ -704,14 +704,26 @@
                 document.getElementById('notes').value = "เหตุผลตีกลับ: " + data.cancelReason;
             }
 
+            // ซ่อนกล่องแจ้งเตือนทั้งหมดก่อน
             document.getElementById('successAlertBox').classList.add('d-none');
             document.getElementById('errorAlertBox').classList.add('d-none');
 
+            // 🚨 แจ้งเตือน: กรณี Token หมดอายุ (จะเด้งกล่องแดงเด่นๆ ขึ้นมา)
+            if (data.tokenErrorShop) {
+                document.getElementById('errorAlertBox').classList.remove('d-none');
+                document.getElementById('errorAlertBox').innerHTML = `🚨 <b>Token แจ้งเตือน:</b> การเชื่อมต่อร้าน <b>${data.tokenErrorShop}</b> ขัดข้อง หรือ <b>Token หมดอายุ</b> กรุณาต่ออายุใหม่ในระบบครับ`;
+                return; // หยุดการทำงานไม่ต้องโชว์ข้อความ "ไม่พบในระบบ"
+            }
+
+            // แจ้งเตือน: หาเจอปกติ
             if (data.shopName && data.orderId) {
                 document.getElementById('successAlertBox').classList.remove('d-none');
                 document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value || data.orderId}</b> ในข้อมูล <b>${data.platform}</b> · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
+            
+            // แจ้งเตือน: หาไม่เจอ (กรณี Token ปกติแต่ไม่มีข้อมูลพัสดุกล่องนี้)
             } else if (document.getElementById('tracking').value || document.getElementById('orderId').value) {
                 document.getElementById('errorAlertBox').classList.remove('d-none');
+                document.getElementById('errorAlertBox').innerHTML = `⚠️ สแกนเจอเลขพัสดุ แต่ตรวจสอบไม่พบในระบบ (อาจเก่าเกินไป หรือ API ยังไม่อัปเดต)`;
             }
         }
 
