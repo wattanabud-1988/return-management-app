@@ -135,12 +135,6 @@
         .btn-check-api { background-color: #e9f5ec; border: 1px solid #2d6a4f; color: #1b4332; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.2s; }
         .btn-check-api:hover { background-color: #d8eadc; }
 
-         /* CSS สำหรับ Checkbox สถานะตรวจแล้ว */
-        .custom-checkbox { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary-green); }
-        .list-item.checked-item { background-color: #f2f2f2; opacity: 0.7; border-color: #e0e0e0; }
-        .list-item.checked-item h6 { text-decoration: line-through; color: #888; }
-        .list-item.checked-item .list-icon { background-color: #e0e0e0; }
-        
         /* CSS สำหรับปุ่มลบรายการ */
         .btn-delete-record {
             background-color: #fdf3f4;
@@ -330,26 +324,15 @@
 
                     <!-- Step 3: วิดีโอ -->
                     <div id="step3" class="wizard-step d-none">
-                        <div class="info-box"><i class="bi bi-camera-video"></i><div><h6>บันทึกวิดีโอเปิดกล่อง</h6><p>ถ่ายวิดีโอ หรือ อัปโหลดวิดีโอที่ถ่ายไว้แล้ว</p></div></div>
+                        <div class="info-box"><i class="bi bi-camera-video"></i><div><h6>บันทึกวิดีโอเปิดกล่อง</h6><p>ถ่ายวิดีโอต่อเนื่องขณะแกะกล่อง</p></div></div>
                         <div class="upload-area" id="videoUploadArea">
                             <div class="upload-icon-circle" style="background: #dc3545;"><i class="bi bi-camera-video"></i></div>
-                            <h5 class="upload-title">เพิ่มวิดีโอเปิดเช็คของ</h5>
+                            <h5 class="upload-title">ถ่ายวิดีโอตอนเปิดเช็คของ</h5>
                             <video id="videoPreview" width="100%" controls class="upload-preview mb-3"></video>
                             <p id="videoFileName" class="text-muted small d-none mb-3"></p>
-                            
-                            <!-- เพิ่มเป็น 2 ปุ่ม: ถ่ายวิดีโอ และ อัปโหลดไฟล์ -->
-                            <div class="d-flex justify-content-center gap-2">
-                                <!-- ปุ่มถ่ายใหม่ (บังคับเปิดกล้อง) -->
-                                <button class="btn btn-danger px-3 py-2" onclick="document.getElementById('videoInputCapture').click()">
-                                    <i class="bi bi-camera-video me-2"></i> ถ่ายสด
-                                </button>
-                                <input type="file" id="videoInputCapture" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
-                                
-                                <!-- ปุ่มอัปโหลด (เปิดจากอัลบั้ม) -->
-                                <button class="btn btn-outline-danger px-3 py-2" onclick="document.getElementById('videoInputUpload').click()">
-                                    <i class="bi bi-folder2-open me-2"></i> เลือกจากเครื่อง
-                                </button>
-                                <input type="file" id="videoInputUpload" accept="video/*" class="d-none" onchange="handleVideoUpload(event)">
+                            <div>
+                                <button class="btn btn-danger px-4 py-2" onclick="document.getElementById('videoInput').click()"><i class="bi bi-camera-video me-2"></i> ถ่ายวิดีโอ</button>
+                                <input type="file" id="videoInput" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
                             </div>
                         </div>
                     </div>
@@ -546,16 +529,9 @@
             }
             let html = '';
             records.forEach((item, index) => {
-                // เช็คสถานะว่าถูกติ๊กไว้หรือยัง
-                let checkedClass = item.isChecked ? 'checked-item' : '';
-                let iconClass = item.isChecked ? 'bi bi-check-circle-fill text-success' : 'bi bi-box-seam';
-                
                 html += `
-                <div class="list-item ${checkedClass}" id="listItem-${index}" onclick="openDetail(${index})">
-                    <!-- กล่อง Checkbox -->
-                    <input type="checkbox" class="form-check-input custom-checkbox" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatus(${index}, this, event)">
-                    
-                    <div class="list-icon"><i class="${iconClass}"></i></div>
+                <div class="list-item" onclick="openDetail(${index})">
+                    <div class="list-icon"><i class="bi bi-box-seam"></i></div>
                     <div class="list-content">
                         <h6>${item.tracking}</h6>
                         <p>${item.date} • ${item.finalCondition}</p>
@@ -564,30 +540,6 @@
                 </div>`;
             });
             listContainer.innerHTML = html;
-        }
-
-        function toggleCheckStatus(index, checkboxEle, event) {
-            event.stopPropagation(); // หยุดไม่ให้มันเด้งเปิดหน้าต่าง Detail ซ้อนขึ้นมา
-            
-            const isChecked = checkboxEle.checked;
-            globalRecords[index].isChecked = isChecked;
-            
-            const listItem = document.getElementById('listItem-' + index);
-            const iconEle = listItem.querySelector('.list-icon i');
-            
-            if (isChecked) {
-                listItem.classList.add('checked-item');
-                iconEle.className = 'bi bi-check-circle-fill text-success';
-            } else {
-                listItem.classList.remove('checked-item');
-                iconEle.className = 'bi bi-box-seam';
-            }
-            
-            // ส่งข้อมูลไปบันทึกลง Google Sheet แบบเงียบๆ (ไม่ต้องรอโหลด)
-            fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "toggleCheck", rowId: globalRecords[index].rowId, isChecked: isChecked })
-            });
         }
 
         function filterRecords() {
@@ -729,7 +681,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 1600;
+                    const MAX_WIDTH = 800;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
