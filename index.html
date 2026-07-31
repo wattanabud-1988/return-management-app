@@ -793,7 +793,7 @@
             return rawText.trim();
         }
 
-        // ✅ 2. ฟังก์ชันกดปุ่มสแกน (ทำงาน 3 ขั้นตอน: QR -> Barcode -> OCR)
+        // ✅ ฟังก์ชันกดปุ่มสแกนใหม่ (ใช้ AI ชิปมือถือ Native + ZXing Engine)
         async function triggerAI() {
             if (!boxImageBase64) return alert("ไม่พบรูปภาพ กรุณาย้อนกลับไปถ่ายรูปหน้ากล่องก่อนครับ");
             
@@ -806,40 +806,46 @@
             let detectedTracking = "";
 
             if (boxImageFile) {
-                try {
-                    document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังค้นหา QR Code...';
-                    
-                    // 🔍 ขั้นที่ 1: พยายามอ่านเฉพาะ QR Code ก่อน
-                    const qrScanner = new Html5Qrcode("reader", { formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ] });
-                    let rawQR = await qrScanner.scanFile(boxImageFile, false);
-                    detectedTracking = extractTrackingNumber(rawQR);
-                    console.log("✅ [Step 1] สแกนเจอจาก QR Code: ", detectedTracking);
-                    
-                } catch (errQR) {
+                // 🔹 ขั้นที่ 1: ใช้ Native BarcodeDetector (ใช้ AI ชิปของสมาร์ทโฟนโดยตรง - แม่นและเร็วที่สุด)
+                if ('BarcodeDetector' in window) {
                     try {
-                        document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังอ่านบาร์โค้ด...';
-                        
-                        // 🔍 ขั้นที่ 2: ถ้าไม่เจอ QR ให้พยายามอ่านเฉพาะ Barcode แบบแท่ง (เช่น Code 128 ที่ขนส่งชอบใช้)
-                        const barcodeScanner = new Html5Qrcode("reader", { 
-                            formatsToSupport: [ 
-                                Html5QrcodeSupportedFormats.CODE_128, 
-                                Html5QrcodeSupportedFormats.CODE_39, 
-                                Html5QrcodeSupportedFormats.ITF 
-                            ] 
+                        document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังสแกนด้วย AI มือถือ...';
+                        const detector = new BarcodeDetector({ 
+                            formats: ['qr_code', 'code_128', 'code_39', 'itf', 'data_matrix'] 
                         });
-                        let rawBarcode = await barcodeScanner.scanFile(boxImageFile, false);
-                        detectedTracking = extractTrackingNumber(rawBarcode);
-                        console.log("✅ [Step 2] สแกนเจอจาก Barcode: ", detectedTracking);
                         
-                    } catch (errBarcode) {
-                        console.log("❌ [Step 1 & 2] มองไม่เห็น QR/Barcode (อาจมีแสงสะท้อน) กำลังส่งให้ AI...");
+                        const img = new Image();
+                        img.src = URL.createObjectURL(boxImageFile);
+                        await img.decode();
+
+                        const barcodes = await detector.detect(img);
+                        if (barcodes && barcodes.length > 0) {
+                            detectedTracking = extractTrackingNumber(barcodes[0].rawValue);
+                            console.log("✅ Native Detector อ่านเจอ:", detectedTracking);
+                        }
+                    } catch (e) {
+                        console.log("Native Detector สแกนไม่ผ่าน ถอยไปใช้ ZXing...", e);
+                    }
+                }
+
+                // 🔹 ขั้นที่ 2: ถ้า AI มือถืออ่านไม่ได้ ให้ใช้ ZXing Engine ช่วยแกะรอย
+                if (!detectedTracking && typeof ZXing !== 'undefined') {
+                    try {
+                        document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังใช้อัลกอริทึมวิเคราะห์ภาพ...';
+                        const codeReader = new ZXing.BrowserMultiFormatReader();
+                        const imgUrl = URL.createObjectURL(boxImageFile);
+                        const result = await codeReader.decodeFromImageUrl(imgUrl);
+                        if (result) {
+                            detectedTracking = extractTrackingNumber(result.getText());
+                            console.log("✅ ZXing Engine อ่านเจอ:", detectedTracking);
+                        }
+                    } catch (e) {
+                        console.log("ZXing สแกนไม่พบบาร์โค้ด/QR Code");
                     }
                 }
             }
 
-            // 🔍 ขั้นที่ 3: ส่งข้อมูลไปหาหลังบ้าน 
-            // - ถ้าเจอเลขจากชั้นที่ 1 หรือ 2 แล้ว: หลังบ้านจะเอาเลขไปค้น API เลยทันที (ข้าม OCR)
-            // - ถ้าหาไม่เจอเลย: หลังบ้านจะให้ AI (OCR) อ่านตัวหนังสือจากรูปแทน
+            // 🔹 ขั้นที่ 3: ส่งข้อมูลไปหลังบ้าน (ถ้าสแกนเจอเลขจะข้าม OCR แต่ถ้าไม่เจอ ค่อยส่งให้ AI อ่านข้อความ)
             analyzeBoxImage(boxImageBase64, detectedTracking);
         }
 
