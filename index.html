@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- เปลี่ยนเป็น ZXing Engine ที่แม่นยำกว่าเดิม -->
     <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
     <title>ReturnFlow - ระบบรับสินค้าคืน</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -31,10 +30,8 @@
 
         .header-top { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
         .header-title { font-weight: 700; font-size: 1.2rem; margin: 0; }
-        .badge-warehouse { background-color: var(--primary-green); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; }
         
         .hero-section { padding: 0 20px 20px 20px; }
-        .hero-subtitle { font-size: 0.7rem; font-weight: 700; color: var(--primary-green); letter-spacing: 1px; margin-bottom: 0; }
         .hero-heading { font-size: 2rem; font-weight: 700; margin-bottom: 5px; }
         .hero-desc { font-size: 0.85rem; color: var(--text-muted); }
 
@@ -121,13 +118,12 @@
         .grid-detail .col-6, .grid-detail .col-12 { padding: 12px; }
         .notes-box { background-color: #f3efe6; border-radius: 10px; }
 
-        /* จัดการสไตล์ปุ่มแพลตฟอร์ม */
         .btn-platform { border-radius: 8px; font-weight: 500; border: none; padding: 10px 5px; flex: 1; text-align: center; color: white; opacity: 0.4; transition: all 0.2s; font-size: 14px; }
         .btn-platform.active { opacity: 1; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .platform-lazada { background-color: #845ef7; } 
         .platform-shopee { background-color: #ff8c72; } 
         .platform-tiktok { background-color: #212529; } 
-        .platform-manual { background-color: #28a745; } /* สีเขียวสำหรับลูกค้าส่งเอง */
+        .platform-manual { background-color: #28a745; } 
 
         .return-type-box { border: 1px solid #ced4da; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; background: #fff; transition: all 0.2s; color: #6c757d; font-weight: 500; font-size: 14px; }
         .return-type-box.active { border: 1px solid #2d6a4f; background-color: #e9f5ec; color: #1b4332; font-weight: bold; }
@@ -135,13 +131,11 @@
         .btn-check-api { background-color: #e9f5ec; border: 1px solid #2d6a4f; color: #1b4332; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.2s; }
         .btn-check-api:hover { background-color: #d8eadc; }
 
-         /* CSS สำหรับ Checkbox สถานะตรวจแล้ว */
         .custom-checkbox { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--primary-green); }
         .list-item.checked-item { background-color: #f2f2f2; opacity: 0.7; border-color: #e0e0e0; }
         .list-item.checked-item h6 { text-decoration: line-through; color: #888; }
         .list-item.checked-item .list-icon { background-color: #e0e0e0; }
         
-        /* CSS สำหรับปุ่มลบรายการ */
         .btn-delete-record {
             background-color: #fdf3f4;
             color: #d9534f;
@@ -159,7 +153,6 @@
     </style>
 </head>
 <body> 
-    <!-- พื้นที่ซ่อนสำหรับตัวอ่านบาร์โค้ด -->
     <div id="reader" style="display: none;"></div>
 
     <!-- 1. หน้าหลัก (Dashboard) -->
@@ -266,7 +259,6 @@
                     <div id="step2" class="wizard-step d-none">
                         <div class="info-box mb-2"><i class="bi bi-robot"></i><div><h6>ตรวจสอบข้อมูลอัตโนมัติ</h6><p>ระบบ AI จะพยายามอ่านข้อมูล กรุณาตรวจสอบ</p></div></div>
                         
-                        <!-- ✅ ปุ่มกดให้ AI อ่านรูปภาพ และ QR Code -->
                         <button type="button" id="btnTriggerAI" class="btn w-100 mb-3 shadow-sm" style="background-color: #f1c75b; color: #2d302e; font-weight: bold; border-radius: 8px; border: none; padding: 10px;" onclick="triggerAI()">
                             <i class="bi bi-magic me-1"></i> สแกนข้อมูลจากรูปกล่องด้วย AI
                         </button>
@@ -286,7 +278,6 @@
                         <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
                             <label class="form-label fw-bold" style="font-size: 14px;">แพลตฟอร์ม</label>
                             
-                            <!-- ปรับปุ่มแพลตฟอร์มให้ว่างเป็นค่าเริ่มต้น -->
                             <div class="d-flex gap-2 mb-3 flex-wrap" id="platformGroup">
                                 <button type="button" id="btn-Lazada" class="btn-platform platform-lazada" onclick="selectPlatform('Lazada')">Lazada</button>
                                 <button type="button" id="btn-Shopee" class="btn-platform platform-shopee" onclick="selectPlatform('Shopee')">Shopee</button>
@@ -295,7 +286,6 @@
                             </div>
                             <input type="hidden" id="platform" value="">
 
-                            <!-- กล่องแจ้งเตือนสีเหลือง โหมดกรอกมือ (Manual) -->
                             <div id="manualAlertBox" class="alert mb-3" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; font-size: 13px; border-radius: 8px; display: none;"></div>
 
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขพัสดุ / เลขคืนสินค้า <span class="text-danger">*</span></label>
@@ -304,19 +294,16 @@
                             <label class="form-label fw-bold" style="font-size: 14px;">เลขคำสั่งซื้อ</label>
                             <input type="text" id="orderId" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์เลขออเดอร์ หรือรอตรวจสอบ...">
 
-                            <!-- ช่องร้านค้า และ ข้อมูลสินค้า -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ร้านค้าที่พบข้อมูล</label>
                             <input type="text" id="shopName" class="form-control mb-3" style="border-radius: 8px; font-size: 15px;" placeholder="พิมพ์ชื่อร้าน หรือรอตรวจสอบ...">
 
                             <label class="form-label fw-bold" style="font-size: 14px;">ข้อมูลสินค้าที่ส่งคืน</label>
                             <textarea id="productDetails" class="form-control mb-4" style="border-radius: 8px; font-size: 15px;" rows="2" placeholder="ระบุชื่อสินค้า, รุ่น, หรือจำนวน..."></textarea>
 
-                            <!-- ปุ่มตรวจสอบ API -->
                             <button type="button" class="btn w-100 mb-4 btn-check-api py-2" onclick="manualCheckAPI()">
                                 <span id="checkApiText">🔍 ตรวจสอบว่าเป็นตีกลับหรือสินค้าคืน</span>
                             </button>
 
-                            <!-- หมวดหมู่เหลือแค่ 2 อัน (ตีกลับ / คืนสินค้า) -->
                             <label class="form-label fw-bold" style="font-size: 14px;">ประเภทการรับคืน</label>
                             <div class="d-flex flex-column gap-2 mb-2" id="returnTypeGroup">
                                 <div id="type-สินค้าตีกลับ" class="return-type-box" onclick="selectReturnType('สินค้าตีกลับ')">สินค้าตีกลับ</div>
@@ -337,15 +324,12 @@
                             <video id="videoPreview" width="100%" controls class="upload-preview mb-3"></video>
                             <p id="videoFileName" class="text-muted small d-none mb-3"></p>
                             
-                            <!-- เพิ่มเป็น 2 ปุ่ม: ถ่ายวิดีโอ และ อัปโหลดไฟล์ -->
                             <div class="d-flex justify-content-center gap-2">
-                                <!-- ปุ่มถ่ายใหม่ (บังคับเปิดกล้อง) -->
                                 <button class="btn btn-danger px-3 py-2" onclick="document.getElementById('videoInputCapture').click()">
                                     <i class="bi bi-camera-video me-2"></i> ถ่ายสด
                                 </button>
                                 <input type="file" id="videoInputCapture" accept="video/*" capture="environment" class="d-none" onchange="handleVideoUpload(event)">
                                 
-                                <!-- ปุ่มอัปโหลด (เปิดจากอัลบั้ม) -->
                                 <button class="btn btn-outline-danger px-3 py-2" onclick="document.getElementById('videoInputUpload').click()">
                                     <i class="bi bi-folder2-open me-2"></i> เลือกจากเครื่อง
                                 </button>
@@ -468,7 +452,6 @@
                         <small class="text-secondary" id="detailNotes">-</small>
                     </div>
 
-                    <!-- ✅ ปุ่มลบตรงนี้ -->
                     <div class="text-end mt-2">
                         <button class="btn-delete-record" id="btnDeleteRecord" onclick="deleteCurrentRecord()">
                             <i class="bi bi-trash3"></i> ลบรายการนี้
@@ -485,14 +468,14 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwKIdETJsBJvhCffm5cdOKxlgNrxyKdNYRovSM39Xd44ywk4bfg2AejPZZgGv-aX80b/exec";
 
-        let boxImageBase64 = "", productImageBase64 = "", videoBase64Data = "", videoMimeType = "";
+        let boxImageBase64 = "", productImageBase64 = "";
+        let rawVideoFile = null; // ✅ ตัวแปรเก็บไฟล์วิดีโอแบบดิบสำหรับ Direct Upload
         let globalRecords = [];
         let currentStep = 1;
         const totalSteps = 5;
         let wizardModalInstance = null;
         let ocrTriggered = false;
         
-        // ✅ ตัวแปรสำหรับจำไฟล์รูปกล่องสำหรับสแกน และเลขแถวที่เปิดดูอยู่
         let boxImageFile = null; 
         let currentDetailRowId = null; 
 
@@ -546,15 +529,12 @@
             }
             let html = '';
             records.forEach((item, index) => {
-                // เช็คสถานะว่าถูกติ๊กไว้หรือยัง
                 let checkedClass = item.isChecked ? 'checked-item' : '';
                 let iconClass = item.isChecked ? 'bi bi-check-circle-fill text-success' : 'bi bi-box-seam';
                 
                 html += `
                 <div class="list-item ${checkedClass}" id="listItem-${index}" onclick="openDetail(${index})">
-                    <!-- กล่อง Checkbox -->
                     <input type="checkbox" class="form-check-input custom-checkbox" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatus(${index}, this, event)">
-                    
                     <div class="list-icon"><i class="${iconClass}"></i></div>
                     <div class="list-content">
                         <h6>${item.tracking}</h6>
@@ -567,8 +547,7 @@
         }
 
         function toggleCheckStatus(index, checkboxEle, event) {
-            event.stopPropagation(); // หยุดไม่ให้มันเด้งเปิดหน้าต่าง Detail ซ้อนขึ้นมา
-            
+            event.stopPropagation(); 
             const isChecked = checkboxEle.checked;
             globalRecords[index].isChecked = isChecked;
             
@@ -583,7 +562,6 @@
                 iconEle.className = 'bi bi-box-seam';
             }
             
-            // ส่งข้อมูลไปบันทึกลง Google Sheet แบบเงียบๆ (ไม่ต้องรอโหลด)
             fetch(WEB_APP_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "toggleCheck", rowId: globalRecords[index].rowId, isChecked: isChecked })
@@ -601,6 +579,7 @@
         function openWizard() {
             currentStep = 1;
             ocrTriggered = false;
+            rawVideoFile = null; // รีเซ็ตวิดีโอเมื่อเริ่มใหม่
             updateWizardUI();
             wizardModalInstance.show();
         }
@@ -636,7 +615,8 @@
                 btnNext.classList.add('active'); btnNext.onclick = submitData;
             } else {
                 btnNext.innerHTML = 'ถัดไป <i class="bi bi-arrow-right ms-1"></i>';
-                if((currentStep===1 && boxImageBase64) || (currentStep===3 && videoBase64Data) || (currentStep===4 && productImageBase64) || currentStep===2) {
+                // ✅ อัปเดตเงื่อนไขให้เช็คจาก rawVideoFile แทน Base64 สำหรับขั้นตอนที่ 3
+                if((currentStep===1 && boxImageBase64) || (currentStep===3 && rawVideoFile) || (currentStep===4 && productImageBase64) || currentStep===2) {
                     btnNext.classList.add('active');
                 } else { btnNext.classList.remove('active'); }
                 btnNext.onclick = nextStep;
@@ -704,23 +684,19 @@
                 document.getElementById('notes').value = "เหตุผลตีกลับ: " + data.cancelReason;
             }
 
-            // ซ่อนกล่องแจ้งเตือนทั้งหมดก่อน
             document.getElementById('successAlertBox').classList.add('d-none');
             document.getElementById('errorAlertBox').classList.add('d-none');
 
-            // 🚨 แจ้งเตือน: กรณี Token หมดอายุ (จะเด้งกล่องแดงเด่นๆ ขึ้นมา)
             if (data.tokenErrorShop) {
                 document.getElementById('errorAlertBox').classList.remove('d-none');
                 document.getElementById('errorAlertBox').innerHTML = `🚨 <b>Token แจ้งเตือน:</b> การเชื่อมต่อร้าน <b>${data.tokenErrorShop}</b> ขัดข้อง หรือ <b>Token หมดอายุ</b> กรุณาต่ออายุใหม่ในระบบครับ`;
-                return; // หยุดการทำงานไม่ต้องโชว์ข้อความ "ไม่พบในระบบ"
+                return; 
             }
 
-            // แจ้งเตือน: หาเจอปกติ
             if (data.shopName && data.orderId) {
                 document.getElementById('successAlertBox').classList.remove('d-none');
                 document.getElementById('successMsgText').innerHTML = `✓ พบเลข <b>${document.getElementById('tracking').value || data.orderId}</b> ในข้อมูล <b>${data.platform}</b> · ร้าน <b>${data.shopName}</b> · จัดเป็น<b>${document.getElementById('returnType').value}</b>`;
             
-            // แจ้งเตือน: หาไม่เจอ (กรณี Token ปกติแต่ไม่มีข้อมูลพัสดุกล่องนี้)
             } else if (document.getElementById('tracking').value || document.getElementById('orderId').value) {
                 document.getElementById('errorAlertBox').classList.remove('d-none');
                 document.getElementById('errorAlertBox').innerHTML = `⚠️ สแกนเจอเลขพัสดุ แต่ตรวจสอบไม่พบในระบบ (อาจเก่าเกินไป หรือ API ยังไม่อัปเดต)`;
@@ -731,7 +707,6 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // ✅ เก็บไฟล์ไว้ให้ระบบ QR/บาร์โค้ดอ่าน
             if (type === 'box') {
                 boxImageFile = file;
             }
@@ -768,10 +743,13 @@
             reader.readAsDataURL(file);
         }
 
+        // ✅ ฟังก์ชันอัปโหลดวิดีโอแบบใหม่ เก็บแค่ไฟล์ต้นฉบับ ไม่ต้องแปลง Base64
         function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            if (file.size > 40 * 1024 * 1024) alert("⚠️ วิดีโอขนาดใหญ่เกิน 40MB อาจทำให้การบันทึกช้าลงมาก");
+            
+            rawVideoFile = file; 
+            
             const videoURL = URL.createObjectURL(file);
             document.getElementById('videoPreview').src = videoURL;
             document.getElementById('videoPreview').style.display = 'block';
@@ -781,16 +759,9 @@
             nameEl.classList.remove('d-none');
             document.getElementById('videoUploadArea').classList.add('has-file');
             
-            videoMimeType = file.type;
-            const reader = new FileReader();
-            reader.onload = function(e) { 
-                videoBase64Data = e.target.result.split(',')[1]; 
-                updateWizardUI();
-            };
-            reader.readAsDataURL(file);
+            updateWizardUI();
         }
 
-        // ✅ 1. ฟังก์ชันช่วยสกัดเลขพัสดุ (แยกออกมาเพื่อให้โค้ดอ่านง่ายขึ้น)
         function extractTrackingNumber(rawText) {
             let upper = rawText.toUpperCase();
             let jtMatch = upper.match(/JTTH\d{12}/);
@@ -805,7 +776,6 @@
             return rawText.trim();
         }
 
-        // ✅ ฟังก์ชันกดปุ่มสแกนใหม่ (ใช้ AI ชิปมือถือ Native + ZXing Engine)
         async function triggerAI() {
             if (!boxImageBase64) return alert("ไม่พบรูปภาพ กรุณาย้อนกลับไปถ่ายรูปหน้ากล่องก่อนครับ");
             
@@ -818,7 +788,6 @@
             let detectedTracking = "";
 
             if (boxImageFile) {
-                // 🔹 ขั้นที่ 1: ใช้ Native BarcodeDetector (ใช้ AI ชิปของสมาร์ทโฟนโดยตรง - แม่นและเร็วที่สุด)
                 if ('BarcodeDetector' in window) {
                     try {
                         document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังสแกนด้วย AI มือถือ...';
@@ -840,7 +809,6 @@
                     }
                 }
 
-                // 🔹 ขั้นที่ 2: ถ้า AI มือถืออ่านไม่ได้ ให้ใช้ ZXing Engine ช่วยแกะรอย
                 if (!detectedTracking && typeof ZXing !== 'undefined') {
                     try {
                         document.getElementById('analyzeLoading').innerHTML = '<div class="spinner-border spinner-border-sm"></div> กำลังใช้อัลกอริทึมวิเคราะห์ภาพ...';
@@ -857,18 +825,16 @@
                 }
             }
 
-            // 🔹 ขั้นที่ 3: ส่งข้อมูลไปหลังบ้าน (ถ้าสแกนเจอเลขจะข้าม OCR แต่ถ้าไม่เจอ ค่อยส่งให้ AI อ่านข้อความ)
             analyzeBoxImage(boxImageBase64, detectedTracking);
         }
 
-        // ✅ 3. ฟังก์ชันสื่อสารกับหลังบ้าน (Google Apps Script)
         async function analyzeBoxImage(base64Data, detectedTracking) {
             const selectedPlatform = document.getElementById('platform').value;
             const payload = { 
                 action: "analyze", 
                 imageBase64: base64Data, 
                 platform: selectedPlatform,
-                barcodeTracking: detectedTracking || "" // ส่งเลขที่สแกนได้ไปให้หลังบ้าน
+                barcodeTracking: detectedTracking || "" 
             };
             
             try {
@@ -913,10 +879,39 @@
             }
         }
 
+        // ✅ เปลี่ยนระบบ Submit ให้ยิงวิดีโอเข้า Drive ตรงๆ ก่อน
         async function submitData() {
             const btn = document.getElementById('btnNext');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
+
+            let finalVideoUrl = "";
+
+            if (rawVideoFile) {
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดวิดีโอเข้าคลัง...';
+                try {
+                    // 1. ขอตั๋ว Upload URL จาก Apps Script
+                    const urlRes = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "getUploadUrl", fileName: rawVideoFile.name || "video.mp4", mimeType: rawVideoFile.type || "video/mp4" })
+                    });
+                    const urlData = await urlRes.json();
+                    
+                    if (urlData.status === "success" && urlData.uploadUrl) {
+                        // 2. ยิงไฟล์วิดีโอขนาดใหญ่เข้า Google Drive ได้เลย
+                        const uploadRes = await fetch(urlData.uploadUrl, { method: 'PUT', body: rawVideoFile });
+                        const uploadData = await uploadRes.json();
+                        
+                        // 3. สร้างลิงก์เก็บไว้ใน Sheet
+                        if (uploadData.id) { finalVideoUrl = "https://drive.google.com/file/d/" + uploadData.id + "/view"; }
+                    }
+                } catch (err) {
+                    console.error("Video Upload Error:", err);
+                    alert("เกิดข้อผิดพลาดในการอัปโหลดวิดีโอ แต่ระบบจะบันทึกข้อมูลส่วนอื่นให้ครับ");
+                }
+            }
+
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึกข้อมูลลงชีต...';
 
             const payload = {
                 action: "submit",
@@ -925,8 +920,7 @@
                 orderId: document.getElementById('orderId').value,
                 boxImageBase64: boxImageBase64,
                 productImageBase64: productImageBase64,
-                videoBase64Data: videoBase64Data, 
-                videoMimeType: videoMimeType,
+                videoDirectUrl: finalVideoUrl, // ✅ ส่งแค่ลิงก์วิดีโอไปบันทึก
                 aiCondition: document.getElementById('returnType').value,
                 finalCondition: document.getElementById('finalCondition').value,
                 notes: document.getElementById('notes').value,
@@ -955,10 +949,9 @@
             return match ? match[1] : null;
         }
 
-        // ✅ อัปเดตฟังก์ชัน ให้จำเลขแถว (Row ID) ก่อนเปิด Pop-up
         function openDetail(index) {
             const item = globalRecords[index];
-            currentDetailRowId = item.rowId; // สำคัญ: เก็บค่าแถวของรายการไว้ใช้ตอนจะลบ
+            currentDetailRowId = item.rowId; 
             
             document.getElementById('detailTracking').innerText = item.tracking;
             document.getElementById('detailPlatform').innerText = item.platform;
@@ -993,7 +986,6 @@
             new bootstrap.Modal(document.getElementById('detailModal')).show();
         }
 
-        // ✅ ฟังก์ชันสำหรับปุ่มลบรายการที่กำลังเปิดดูอยู่
         async function deleteCurrentRecord() {
             if (!currentDetailRowId) return;
             
@@ -1011,11 +1003,9 @@
                     const result = await response.json();
                     
                     if (result.status === "success") {
-                        // ซ่อน Modal เมื่อลบเสร็จ
                         var modal = bootstrap.Modal.getInstance(document.getElementById('detailModal'));
                         modal.hide();
                         
-                        // รีเฟรชหน้าประวัติใหม่ให้เห็นว่าลบไปแล้ว
                         document.getElementById('recordsList').innerHTML = '<div class="text-center text-muted my-4"><div class="spinner-border spinner-border-sm text-success mb-2"></div><br>กำลังดึงข้อมูล...</div>';
                         fetchRecords();
                     } else {
