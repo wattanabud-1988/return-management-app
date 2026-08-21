@@ -155,17 +155,14 @@
 <body> 
     <div id="reader" style="display: none;"></div>
 
-    <!-- 1. หน้าหลัก (Dashboard) -->
     <div id="dashboardView" class="view-section">
         <div class="header-top">
             <h1 class="header-title">ReturnFlow</h1>
         </div>
-
         <div class="hero-section">
             <h2 class="hero-heading">รับสินค้าคืน</h2>
             <p class="hero-desc">ตรวจรับสินค้าตีกลับจากทุกแพลตฟอร์มในขั้นตอนเดียว</p>
         </div>
-
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-clipboard-check"></i></div>
             <div class="stat-info">
@@ -174,7 +171,6 @@
                 <small>รายการที่บันทึกเข้าระบบแล้ว</small>
             </div>
         </div>
-
         <div class="main-container">
             <div class="text-center"><span class="section-title">ขั้นตอนรับสินค้าคืน</span></div>
             <div class="step-grid">
@@ -190,7 +186,6 @@
         </div>
     </div>
 
-    <!-- 2. หน้าประวัติ (History) -->
     <div id="historyView" class="view-section d-none">
         <div class="header-top"><h1 class="header-title">ReturnFlow</h1></div>
         <div class="hero-section">
@@ -209,7 +204,6 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <a href="#" class="nav-item" onclick="switchTab('dashboardView', this)"><i class="bi bi-grid-fill"></i>ภาพรวม</a>
         <a href="#" class="nav-item active" onclick="switchTab('dashboardView', this)"><i class="bi bi-box-seam"></i>รับสินค้าคืน</a>
@@ -217,13 +211,10 @@
         <a href="#" class="nav-item"><i class="bi bi-gear"></i>ตั้งค่าระบบ</a>
     </div>
 
-    <!-- ========================================== -->
-    <!-- WIZARD MODAL (ฟอร์มรับคืน 5 ขั้นตอน) -->
-    <!-- ========================================== -->
+    <!-- WIZARD MODAL -->
     <div class="modal fade wizard-modal" id="wizardModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content pb-5">
-                
                 <div class="wizard-header">
                     <div class="btn-close-custom" onclick="closeWizard()"><i class="bi bi-x"></i></div>
                     <p class="wizard-title-small">รายการรับคืนใหม่</p>
@@ -240,7 +231,6 @@
                 </div>
 
                 <div class="p-3">
-                    <!-- Step 1: รูปกล่อง -->
                     <div id="step1" class="wizard-step">
                         <div class="info-box"><i class="bi bi-camera"></i><div><h6>ถ่ายให้เห็นฉลากทั้งใบ</h6><p>วางกล่องบนพื้นเรียบ ให้เลขพัสดุอยู่ในกรอบ</p></div></div>
                         <div class="upload-area" id="boxUploadArea">
@@ -255,7 +245,6 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: ข้อมูล OCR -->
                     <div id="step2" class="wizard-step d-none">
                         <div class="info-box mb-2"><i class="bi bi-robot"></i><div><h6>ตรวจสอบข้อมูลอัตโนมัติ</h6><p>ระบบ AI จะพยายามอ่านข้อมูล กรุณาตรวจสอบ</p></div></div>
                         
@@ -315,7 +304,6 @@
                         </div>
                     </div>
 
-                    <!-- Step 3: วิดีโอ -->
                     <div id="step3" class="wizard-step d-none">
                         <div class="info-box"><i class="bi bi-camera-video"></i><div><h6>บันทึกวิดีโอเปิดกล่อง</h6><p>ถ่ายวิดีโอ หรือ อัปโหลดวิดีโอที่ถ่ายไว้แล้ว</p></div></div>
                         <div class="upload-area" id="videoUploadArea">
@@ -338,7 +326,6 @@
                         </div>
                     </div>
 
-                    <!-- Step 4: รูปสินค้า -->
                     <div id="step4" class="wizard-step d-none">
                         <div class="info-box"><i class="bi bi-box-open"></i><div><h6>ถ่ายภาพสินค้าภายใน</h6><p>ถ่ายให้เห็นตัวสินค้า และความเสียหาย</p></div></div>
                         <div class="upload-area" id="productUploadArea">
@@ -352,7 +339,6 @@
                         </div>
                     </div>
 
-                    <!-- Step 5: ตรวจสภาพ & บันทึก -->
                     <div id="step5" class="wizard-step d-none">
                         <div class="info-box"><i class="bi bi-shield-check"></i><div><h6>สรุปสภาพสินค้าคืน</h6><p>ประเมินสภาพสินค้าขั้นสุดท้าย</p></div></div>
                         
@@ -384,9 +370,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- DETAIL MODAL (หน้ารายละเอียดรายการเก่า) -->
-    <!-- ========================================== -->
+    <!-- DETAIL MODAL -->
     <div class="modal fade" id="detailModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content modal-detail-bg">
@@ -463,13 +447,12 @@
         </div>
     </div>
 
-    <!-- Javascript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwKIdETJsBJvhCffm5cdOKxlgNrxyKdNYRovSM39Xd44ywk4bfg2AejPZZgGv-aX80b/exec";
 
         let boxImageBase64 = "", productImageBase64 = "";
-        let rawVideoFile = null; // ✅ ตัวแปรเก็บไฟล์วิดีโอแบบดิบสำหรับ Direct Upload
+        let rawVideoFile = null; 
         let globalRecords = [];
         let currentStep = 1;
         const totalSteps = 5;
@@ -579,7 +562,7 @@
         function openWizard() {
             currentStep = 1;
             ocrTriggered = false;
-            rawVideoFile = null; // รีเซ็ตวิดีโอเมื่อเริ่มใหม่
+            rawVideoFile = null; 
             updateWizardUI();
             wizardModalInstance.show();
         }
@@ -615,7 +598,6 @@
                 btnNext.classList.add('active'); btnNext.onclick = submitData;
             } else {
                 btnNext.innerHTML = 'ถัดไป <i class="bi bi-arrow-right ms-1"></i>';
-                // ✅ อัปเดตเงื่อนไขให้เช็คจาก rawVideoFile แทน Base64 สำหรับขั้นตอนที่ 3
                 if((currentStep===1 && boxImageBase64) || (currentStep===3 && rawVideoFile) || (currentStep===4 && productImageBase64) || currentStep===2) {
                     btnNext.classList.add('active');
                 } else { btnNext.classList.remove('active'); }
@@ -743,7 +725,6 @@
             reader.readAsDataURL(file);
         }
 
-        // ✅ ฟังก์ชันอัปโหลดวิดีโอแบบใหม่ เก็บแค่ไฟล์ต้นฉบับ ไม่ต้องแปลง Base64
         function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -879,7 +860,7 @@
             }
         }
 
-        // ✅ เปลี่ยนระบบ Submit ให้ยิงวิดีโอเข้า Drive ตรงๆ ก่อน
+        // 🌟 🌟 🌟 ส่วนที่มีการแก้ไขเพื่อปลดล็อก CORS 🌟 🌟 🌟
         async function submitData() {
             const btn = document.getElementById('btnNext');
             btn.disabled = true;
@@ -890,24 +871,33 @@
             if (rawVideoFile) {
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังอัปโหลดวิดีโอเข้าคลัง...';
                 try {
-                    // 1. ขอตั๋ว Upload URL จาก Apps Script
                     const urlRes = await fetch(WEB_APP_URL, {
                         method: 'POST',
-                        body: JSON.stringify({ action: "getUploadUrl", fileName: rawVideoFile.name || "video.mp4", mimeType: rawVideoFile.type || "video/mp4" })
+                        body: JSON.stringify({ 
+                            action: "getUploadUrl", 
+                            fileName: rawVideoFile.name || "video.mp4", 
+                            mimeType: rawVideoFile.type || "video/mp4",
+                            origin: window.location.origin 
+                        })
                     });
                     const urlData = await urlRes.json();
                     
                     if (urlData.status === "success" && urlData.uploadUrl) {
-                        // 2. ยิงไฟล์วิดีโอขนาดใหญ่เข้า Google Drive ได้เลย
-                        const uploadRes = await fetch(urlData.uploadUrl, { method: 'PUT', body: rawVideoFile });
+                        const uploadRes = await fetch(urlData.uploadUrl, { 
+                            method: 'PUT', 
+                            body: rawVideoFile 
+                        });
+                        
+                        if (!uploadRes.ok) throw new Error("Google Drive ปฏิเสธการรับไฟล์");
                         const uploadData = await uploadRes.json();
                         
-                        // 3. สร้างลิงก์เก็บไว้ใน Sheet
                         if (uploadData.id) { finalVideoUrl = "https://drive.google.com/file/d/" + uploadData.id + "/view"; }
+                    } else {
+                        throw new Error(urlData.message || "ไม่สามารถขอลิงก์อัปโหลดได้");
                     }
                 } catch (err) {
                     console.error("Video Upload Error:", err);
-                    alert("เกิดข้อผิดพลาดในการอัปโหลดวิดีโอ แต่ระบบจะบันทึกข้อมูลส่วนอื่นให้ครับ");
+                    alert("⚠️ เกิดข้อผิดพลาดในการอัปโหลดวิดีโอ แต่ระบบจะบันทึกข้อมูลส่วนอื่นให้ครับ");
                 }
             }
 
@@ -920,7 +910,7 @@
                 orderId: document.getElementById('orderId').value,
                 boxImageBase64: boxImageBase64,
                 productImageBase64: productImageBase64,
-                videoDirectUrl: finalVideoUrl, // ✅ ส่งแค่ลิงก์วิดีโอไปบันทึก
+                videoDirectUrl: finalVideoUrl, 
                 aiCondition: document.getElementById('returnType').value,
                 finalCondition: document.getElementById('finalCondition').value,
                 notes: document.getElementById('notes').value,
