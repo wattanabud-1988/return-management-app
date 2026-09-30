@@ -150,6 +150,292 @@
             transition: all 0.2s;
         }
         .btn-delete-record:hover { background-color: #f8d7da; }
+
+        /* ===== Return history workspace ===== */
+        #historyView { --history-border: #e7e1d5; --history-soft: #f3efe6; --history-accent: #a67c3f; }
+        .history-hero { padding-bottom: 14px; }
+        .history-shell {
+            background: #e6e2d7;
+            border-radius: 26px;
+            padding: 18px;
+            margin: 0 10px 22px;
+            min-height: 56vh;
+        }
+        .history-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .history-summary-card {
+            background: #fff;
+            border: 1px solid var(--history-border);
+            border-radius: 16px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            min-width: 0;
+        }
+        .history-summary-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            background: #f7eedc;
+            color: #8b6b37;
+            font-size: 1rem;
+        }
+        .history-summary-card.good .history-summary-icon { background: #e8f5ea; color: #2f7d46; }
+        .history-summary-card.warn .history-summary-icon { background: #fff1dd; color: #b26d16; }
+        .history-summary-card.issue .history-summary-icon { background: #fdeceb; color: #c34f49; }
+        .history-summary-label { font-size: .67rem; color: var(--text-muted); font-weight: 600; line-height: 1.15; }
+        .history-summary-value { font-size: 1.35rem; font-weight: 700; line-height: 1.05; color: var(--text-dark); }
+
+        .history-toolbar {
+            background: rgba(255,255,255,.54);
+            border: 1px solid rgba(255,255,255,.5);
+            border-radius: 18px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .history-search-box {
+            background: #fff;
+            border: 1px solid var(--history-border);
+            border-radius: 13px;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            box-shadow: 0 2px 10px rgba(45,48,46,.025);
+        }
+        .history-search-box i { color: #7d827e; font-size: 1rem; }
+        .history-search-box input {
+            border: 0;
+            outline: 0;
+            background: transparent;
+            flex: 1;
+            min-width: 0;
+            padding: 11px 10px;
+            font-size: .84rem;
+            color: var(--text-dark);
+        }
+        .history-filter-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .history-chip {
+            border: 1px solid #ded8cc;
+            background: #fff;
+            color: #5e615e;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: .7rem;
+            font-weight: 700;
+            line-height: 1;
+            transition: .18s ease;
+        }
+        .history-chip:hover { border-color: #bba77e; background: #fbf8f2; }
+        .history-chip.active { background: #efe0bf; color: #72582e; border-color: #e8d1a0; }
+        .history-filter-select {
+            min-height: 32px;
+            border-radius: 10px;
+            border: 1px solid #ded8cc;
+            background: #fff;
+            color: #555a56;
+            padding: 5px 28px 5px 10px;
+            font-size: .7rem;
+            font-weight: 600;
+        }
+        .history-toolbar-spacer { flex: 1 1 auto; }
+        .history-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 2px 4px 8px;
+            color: #747975;
+            font-size: .7rem;
+        }
+
+        .history-table-head,
+        .history-record {
+            display: grid;
+            grid-template-columns: 34px minmax(190px, 1.3fr) minmax(230px, 1.65fr) minmax(145px, .95fr) minmax(125px, .82fr) 88px minmax(100px,.72fr) 34px;
+            gap: 10px;
+            align-items: center;
+        }
+        .history-table-head {
+            padding: 0 10px 7px;
+            color: #777b77;
+            font-size: .63rem;
+            font-weight: 700;
+        }
+        .history-record {
+            background: #fff;
+            border: 1px solid var(--history-border);
+            border-radius: 15px;
+            padding: 9px 10px;
+            margin-bottom: 7px;
+            min-height: 66px;
+            cursor: pointer;
+            transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        }
+        .history-record:hover {
+            border-color: #d0bd98;
+            box-shadow: 0 6px 16px rgba(73,62,42,.07);
+            transform: translateY(-1px);
+        }
+        .history-record.checked-item { opacity: .68; background: #f7f6f2; }
+        .history-record.checked-item .history-primary { text-decoration: none; color: #686d69; }
+        .history-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            object-fit: cover;
+            background: #f4f0e8;
+            border: 1px solid #ece5d9;
+            flex: 0 0 auto;
+        }
+        .history-thumb-fallback {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            background: #f4f0e8;
+            color: #a78d65;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ece5d9;
+            flex: 0 0 auto;
+        }
+        .history-id-cell { display: flex; align-items: center; gap: 9px; min-width: 0; }
+        .history-id-copy { min-width: 0; }
+        .history-primary { font-size: .76rem; font-weight: 700; color: #313532; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .history-secondary { font-size: .61rem; color: #8b908c; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .history-product-name { font-size: .73rem; font-weight: 700; line-height: 1.35; color: #373b38; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .history-product-sub { font-size: .61rem; color: #8b908c; margin-top: 3px; }
+        .history-mobile-details { display: none; }
+        .history-reason { font-size: .68rem; color: #606561; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .history-condition { font-size: .67rem; font-weight: 700; line-height: 1.25; }
+        .history-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border-radius: 999px;
+            padding: 5px 8px;
+            font-size: .61rem;
+            font-weight: 700;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+        .status-ready { background: #e6f4e9; color: #2c7441; }
+        .status-pending { background: #fff0d8; color: #a16516; }
+        .status-issue { background: #fde9e7; color: #b6403b; }
+        .status-checked { background: #eef0ed; color: #666b67; }
+        .shop-badge { background: #f2efe8; color: #62655f; }
+        .history-action {
+            width: 30px; height: 30px; border-radius: 9px; border: 1px solid #e4dfd5;
+            background: #fff; color: #6d716e; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .history-empty {
+            background: rgba(255,255,255,.75);
+            border: 1px dashed #d7d0c4;
+            border-radius: 16px;
+            padding: 38px 20px;
+            text-align: center;
+            color: #7b807c;
+            font-size: .8rem;
+        }
+
+        .history-detail-dialog.modal-dialog {
+            max-width: 560px;
+            min-height: 100vh;
+            margin: 0 0 0 auto;
+        }
+        .history-detail-dialog .modal-content {
+            min-height: 100vh;
+            border: 0;
+            border-radius: 24px 0 0 24px;
+            background: #fbf9f4;
+            box-shadow: -20px 0 45px rgba(45,48,46,.14);
+        }
+        .history-detail-header { padding: 20px 22px 10px; }
+        .history-detail-body { padding: 8px 22px 28px; }
+        .history-detail-hero {
+            background: #fff;
+            border: 1px solid var(--history-border);
+            border-radius: 16px;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: 84px minmax(0,1fr);
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .history-detail-hero img {
+            width: 84px; height: 84px; object-fit: cover; border-radius: 13px; background: #f2eee6;
+        }
+        .history-detail-section-title { font-size: .72rem; font-weight: 700; color: #474b48; margin: 17px 0 7px; }
+        .history-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            border: 1px solid var(--history-border);
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .history-detail-field { padding: 11px 12px; border-bottom: 1px solid #eee9df; min-width: 0; }
+        .history-detail-field:nth-child(odd) { border-right: 1px solid #eee9df; }
+        .history-detail-field.wide { grid-column: 1 / -1; border-right: 0; }
+        .history-detail-field-label { font-size: .61rem; color: #929691; margin-bottom: 3px; }
+        .history-detail-field-value { font-size: .74rem; font-weight: 700; color: #373b38; word-break: break-word; }
+        .history-detail-media { border-radius: 14px !important; box-shadow: none !important; border: 1px solid var(--history-border) !important; }
+        .history-detail-note { background: #f2eee6; border-radius: 13px; padding: 12px; font-size: .72rem; color: #626761; }
+
+        @media (max-width: 1100px) {
+            .history-table-head { display: none; }
+            .history-record {
+                grid-template-columns: 30px 1.15fr 1.45fr 1fr 92px 30px;
+            }
+            .history-record .history-col-reason,
+            .history-record .history-col-shop { display: none; }
+        }
+        @media (max-width: 720px) {
+            .history-shell { margin: 0 8px 18px; padding: 12px; border-radius: 20px; }
+            .history-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .history-filter-row { gap: 6px; }
+            .history-toolbar-spacer { display: none; }
+            .history-filter-select { flex: 1 1 46%; min-width: 130px; }
+            .history-record {
+                grid-template-columns: 28px minmax(0, 1fr) 82px 28px;
+                gap: 8px;
+                padding: 9px;
+            }
+            .history-record .history-col-product,
+            .history-record .history-col-reason,
+            .history-record .history-col-condition,
+            .history-record .history-col-shop { display: none; }
+            .history-id-cell { align-items: flex-start; }
+            .history-id-copy { overflow: visible; }
+            .history-mobile-details { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; }
+            .history-mobile-product { font-size: .64rem; font-weight: 700; color: #464b47; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 100%; }
+            .history-mobile-reason { font-size: .58rem; color: #858a86; max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .history-mobile-details .history-badge { font-size: .54rem; padding: 3px 6px; }
+            .history-record { min-height: 84px; height: auto; }
+            .history-thumb, .history-thumb-fallback { width: 40px; height: 40px; }
+            .history-detail-dialog.modal-dialog { max-width: 100%; width: 100%; margin: 0; }
+            .history-detail-dialog .modal-content { border-radius: 0; }
+            .history-detail-body { padding: 8px 14px 24px; }
+            .history-detail-header { padding: 16px 14px 8px; }
+        }
     </style>
 </head>
 <body> 
@@ -188,18 +474,84 @@
 
     <div id="historyView" class="view-section d-none">
         <div class="header-top"><h1 class="header-title">ReturnFlow</h1></div>
-        <div class="hero-section">
+        <div class="hero-section history-hero">
             <h2 class="hero-heading">ประวัติรายการรับคืน</h2>
-            <p class="hero-desc">ค้นหาและเปิดดูหลักฐานย้อนหลัง</p>
+            <p class="hero-desc">ค้นหาและเปิดดูข้อมูลสินค้าได้จากรายการ โดยไม่ต้องเปิดทีละเคส</p>
         </div>
-        <div class="main-container mb-5" style="background: #e5e2d8; min-height: 50vh;">
-            <div class="text-center"><span class="section-title">รายการทั้งหมด</span></div>
-            <div class="search-box">
-                <i class="bi bi-search text-muted"></i>
-                <input type="text" id="searchInput" placeholder="ค้นหาเลขคืน ชื่อสินค้า หรือแพลตฟอร์ม..." onkeyup="filterRecords()">
+
+        <div class="history-shell mb-5">
+            <div class="history-summary-grid">
+                <div class="history-summary-card">
+                    <div class="history-summary-icon"><i class="bi bi-box-seam"></i></div>
+                    <div><div class="history-summary-label">ทั้งหมด</div><div class="history-summary-value" id="historyTotalCount">0</div></div>
+                </div>
+                <div class="history-summary-card warn">
+                    <div class="history-summary-icon"><i class="bi bi-clock-history"></i></div>
+                    <div><div class="history-summary-label">รอตรวจ</div><div class="history-summary-value" id="historyPendingCount">0</div></div>
+                </div>
+                <div class="history-summary-card good">
+                    <div class="history-summary-icon"><i class="bi bi-check-circle"></i></div>
+                    <div><div class="history-summary-label">พร้อมขายต่อ</div><div class="history-summary-value" id="historyReadyCount">0</div></div>
+                </div>
+                <div class="history-summary-card issue">
+                    <div class="history-summary-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div><div class="history-summary-label">มีปัญหา</div><div class="history-summary-value" id="historyIssueCount">0</div></div>
+                </div>
+            </div>
+
+            <div class="history-toolbar">
+                <div class="history-search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="ค้นหาเลขคืน เลขออเดอร์ ชื่อสินค้า ร้าน แพลตฟอร์ม สถานะ หรือหมายเหตุ..." oninput="applyHistoryFilters()">
+                </div>
+                <div class="history-filter-row">
+                    <button type="button" class="history-chip active" data-platform="all" onclick="setHistoryPlatform('all', this)">ทั้งหมด</button>
+                    <button type="button" class="history-chip" data-platform="tiktok" onclick="setHistoryPlatform('tiktok', this)">TikTok</button>
+                    <button type="button" class="history-chip" data-platform="lazada" onclick="setHistoryPlatform('lazada', this)">Lazada</button>
+                    <button type="button" class="history-chip" data-platform="shopee" onclick="setHistoryPlatform('shopee', this)">Shopee</button>
+                    <button type="button" class="history-chip" data-platform="manual" onclick="setHistoryPlatform('manual', this)">ลูกค้าส่งเอง</button>
+                    <div class="history-toolbar-spacer"></div>
+                    <select id="historyShopFilter" class="history-filter-select" onchange="applyHistoryFilters()">
+                        <option value="all">ทุกร้าน</option>
+                    </select>
+                    <select id="historyStatusFilter" class="history-filter-select" onchange="applyHistoryFilters()">
+                        <option value="all">ทุกสถานะ</option>
+                        <option value="pending">รอตรวจ</option>
+                        <option value="ready">พร้อมขายต่อ</option>
+                        <option value="issue">มีปัญหา</option>
+                        <option value="checked">ตรวจแล้ว</option>
+                    </select>
+                    <select id="historySort" class="history-filter-select" onchange="applyHistoryFilters()">
+                        <option value="latest">ล่าสุดก่อน</option>
+                        <option value="oldest">เก่าสุดก่อน</option>
+                        <option value="platform">เรียงตามแพลตฟอร์ม</option>
+                        <option value="product">เรียงตามสินค้า</option>
+                    </select>
+                    <select id="historyPageSize" class="history-filter-select" onchange="changeHistoryPageSize()">
+                        <option value="20">20 รายการ/หน้า</option>
+                        <option value="50">50 รายการ/หน้า</option>
+                        <option value="100">100 รายการ/หน้า</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="history-meta-row">
+                <span id="historyResultCount">กำลังดึงข้อมูล...</span>
+                <span id="historyPager" class="d-inline-flex align-items-center gap-2"></span>
+            </div>
+
+            <div class="history-table-head">
+                <span></span>
+                <span>เลขคืน / ออเดอร์</span>
+                <span>สินค้า</span>
+                <span>เหตุผล / หมายเหตุ</span>
+                <span>ผลตรวจล่าสุด</span>
+                <span>แพลตฟอร์ม</span>
+                <span>ร้าน</span>
+                <span></span>
             </div>
             <div id="recordsList">
-                <div class="text-center text-muted my-4"><div class="spinner-border spinner-border-sm text-success mb-2"></div><br>กำลังดึงข้อมูล...</div>
+                <div class="history-empty"><div class="spinner-border spinner-border-sm text-success mb-2"></div><br>กำลังดึงข้อมูล...</div>
             </div>
         </div>
     </div>
@@ -372,73 +724,78 @@
         </div>
     </div>
 
-    <!-- DETAIL MODAL -->
+    <!-- DETAIL DRAWER -->
     <div class="modal fade" id="detailModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-dialog modal-dialog-scrollable history-detail-dialog">
             <div class="modal-content modal-detail-bg">
-                <div class="modal-header border-0 pb-0">
-                    <small class="text-success fw-bold">รายละเอียดรายการคืน</small>
+                <div class="modal-header border-0 history-detail-header">
+                    <div>
+                        <small class="text-success fw-bold d-block mb-1">รายละเอียดรายการรับคืน</small>
+                        <div class="fw-bold" style="font-size:1.05rem;">ตรวจข้อมูลโดยไม่ออกจากหน้ารายการ</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body pt-1 px-3 pb-4">
-                    <h4 class="fw-bold mb-3" id="detailTracking">JTTH...</h4>
-                    <div class="mb-3">
-                        <span class="badge bg-dark me-1" id="detailPlatform">Platform</span>
-                        <span class="badge" id="detailConditionBadge">ปกติ</span>
+                <div class="modal-body history-detail-body">
+                    <div class="history-detail-hero">
+                        <div id="detailHeroThumbFallback" class="history-thumb-fallback" style="width:84px;height:84px;font-size:1.4rem;"><i class="bi bi-box-seam"></i></div>
+                        <img id="detailHeroThumb" class="d-none" alt="รูปสินค้า">
+                        <div class="min-w-0">
+                            <h5 class="fw-bold mb-1 text-break" id="detailTracking">-</h5>
+                            <div class="small text-muted mb-2" id="detailOrderSummary">-</div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="platform-tag tag-other" id="detailPlatform">Platform</span>
+                                <span class="history-badge status-checked" id="detailConditionBadge">-</span>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailBoxContainer">
-                        <img id="detailBoxImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
+
+                    <div class="history-detail-section-title">ข้อมูลรายการ</div>
+                    <div class="history-detail-grid">
+                        <div class="history-detail-field">
+                            <div class="history-detail-field-label">เลขคำสั่งซื้อ</div>
+                            <div class="history-detail-field-value" id="detailOrderId">-</div>
+                        </div>
+                        <div class="history-detail-field">
+                            <div class="history-detail-field-label">ร้านค้า</div>
+                            <div class="history-detail-field-value" id="detailShop">-</div>
+                        </div>
+                        <div class="history-detail-field">
+                            <div class="history-detail-field-label">ผลประเมินสภาพ (AI)</div>
+                            <div class="history-detail-field-value" id="detailAiInfo">-</div>
+                        </div>
+                        <div class="history-detail-field">
+                            <div class="history-detail-field-label">วันเวลาที่รับ</div>
+                            <div class="history-detail-field-value" id="detailDate">-</div>
+                        </div>
+                        <div class="history-detail-field wide">
+                            <div class="history-detail-field-label">ข้อมูลสินค้า</div>
+                            <div class="history-detail-field-value" id="detailProductDetails">-</div>
+                        </div>
+                    </div>
+
+                    <div class="history-detail-section-title">หมายเหตุ / เหตุผล</div>
+                    <div class="history-detail-note" id="detailNotes">-</div>
+
+                    <div class="history-detail-section-title">หลักฐาน</div>
+                    <div class="card mb-3 history-detail-media overflow-hidden d-none" id="detailProdContainer">
+                        <img id="detailProdImg" src="" class="card-img-top" style="max-height: 300px; object-fit: contain; background: #f2eee6;">
+                        <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">รูปสินค้าภายใน</small></div>
+                    </div>
+                    <div class="card mb-3 history-detail-media overflow-hidden d-none" id="detailBoxContainer">
+                        <img id="detailBoxImg" src="" class="card-img-top" style="max-height: 300px; object-fit: contain; background: #f2eee6;">
                         <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">รูปกล่องก่อนเปิด</small></div>
                     </div>
-                    
-                    <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailVideoContainer">
+                    <div class="card mb-3 history-detail-media overflow-hidden d-none" id="detailVideoContainer">
                         <div class="ratio ratio-16x9 bg-dark">
                             <iframe id="detailVideoFrame" src="" allow="autoplay" allowfullscreen style="border:none;"></iframe>
                         </div>
                         <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">วิดีโอตอนเปิดเช็คของ</small></div>
                     </div>
 
-                    <div class="card mb-3 border-0 shadow-sm rounded-4 overflow-hidden d-none" id="detailProdContainer">
-                        <img id="detailProdImg" src="" class="card-img-top" style="max-height: 250px; object-fit: contain; background: #e9ecef;">
-                        <div class="card-body py-2 px-3 border-top bg-white"><small class="fw-bold text-dark">รูปสินค้าภายใน</small></div>
-                    </div>
-                    
-                    <div class="card border-0 shadow-sm mb-3 rounded-4 overflow-hidden">
-                        <div class="row g-0 grid-detail bg-white">
-                            <div class="col-6 border-end border-bottom">
-                                <small class="text-muted d-block mb-1">ผลประเมินสภาพ (AI)</small>
-                                <span class="fw-bold text-dark text-truncate d-block" id="detailAiInfo">-</span>
-                            </div>
-                            <div class="col-6 border-bottom">
-                                <small class="text-muted d-block mb-1">เลขคำสั่งซื้อ</small>
-                                <span class="fw-bold text-dark text-break" id="detailOrderId">-</span>
-                            </div>
-                            <div class="col-6 border-end border-bottom">
-                                <small class="text-muted d-block mb-1">ประเภทการรับคืน</small>
-                                <span class="fw-bold text-dark">คืนสินค้า</span>
-                            </div>
-                            <div class="col-6 border-bottom">
-                                <small class="text-muted d-block mb-1">ร้านค้า</small>
-                                <span class="fw-bold text-dark" id="detailShop">-</span>
-                            </div>
-                            <div class="col-12 border-bottom">
-                                <small class="text-muted d-block mb-1">ข้อมูลสินค้า</small>
-                                <span class="fw-bold text-dark text-break" id="detailProductDetails">-</span>
-                            </div>
-                            <div class="col-12">
-                                <small class="text-muted d-block mb-1">วันเวลาที่รับ</small>
-                                <span class="fw-bold text-dark" id="detailDate">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="notes-box p-3 shadow-sm mb-4">
-                        <small class="fw-bold d-block mb-1 text-dark">หมายเหตุการตรวจสภาพ</small>
-                        <small class="text-secondary" id="detailNotes">-</small>
-                    </div>
-
-                    <div class="text-end mt-2">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mt-4">
+                        <button class="btn btn-light border rounded-3 px-3" type="button" data-bs-dismiss="modal">
+                            <i class="bi bi-arrow-left me-1"></i> กลับไปรายการ
+                        </button>
                         <button class="btn-delete-record" id="btnDeleteRecord" onclick="deleteCurrentRecord()">
                             <i class="bi bi-trash3"></i> ลบรายการนี้
                         </button>
@@ -455,6 +812,10 @@
         let boxImageBase64 = "", productImageBase64 = "";
         let rawVideoFile = null; 
         let globalRecords = [];
+        let historyPlatformFilter = "all";
+        let historyCurrentPage = 1;
+        let historyPageSize = 20;
+        let historyFilteredRecords = [];
         let currentStep = 1;
         const totalSteps = 5;
         let wizardModalInstance = null;
@@ -481,9 +842,11 @@
                 const response = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: "getRecords" }) });
                 const result = await response.json();
                 if (result.status === "success") {
-                    globalRecords = result.data; 
+                    globalRecords = Array.isArray(result.data) ? result.data : [];
                     updateDashboardStats();
-                    renderList(globalRecords);
+                    updateHistorySummary(globalRecords);
+                    populateHistoryShopFilter();
+                    applyHistoryFilters();
                 } else {
                     document.getElementById('recordsList').innerHTML = `<div class="text-center text-danger my-4">❌ โหลดไม่ได้: ${result.message}</div>`;
                 }
@@ -497,65 +860,262 @@
             document.getElementById('todayCount').innerText = todayCount > 0 ? todayCount : globalRecords.length;
         }
 
+        function safeText(value) {
+            return String(value == null ? "" : value);
+        }
+
+        function escapeHtml(value) {
+            return safeText(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         function getPlatformClass(platform) {
-            let p = (platform || "").toLowerCase();
-            if(p.includes('tiktok')) return 'tag-tiktok';
-            if(p.includes('shopee')) return 'tag-shopee';
-            if(p.includes('lazada')) return 'tag-lazada';
+            const p = safeText(platform).toLowerCase();
+            if (p.includes('tiktok')) return 'tag-tiktok';
+            if (p.includes('shopee')) return 'tag-shopee';
+            if (p.includes('lazada')) return 'tag-lazada';
             return 'tag-other';
+        }
+
+        function getPlatformKey(platform) {
+            const p = safeText(platform).toLowerCase();
+            if (p.includes('tiktok')) return 'tiktok';
+            if (p.includes('shopee')) return 'shopee';
+            if (p.includes('lazada')) return 'lazada';
+            if (p.includes('ลูกค้าส่งเอง') || p.includes('manual')) return 'manual';
+            return 'other';
+        }
+
+        function isReadyRecord(item) {
+            const text = [item.finalCondition, item.aiCondition].map(safeText).join(" ").toLowerCase();
+            return /สมบูรณ์|พร้อมขายต่อ|สภาพดี|ปกติ/.test(text);
+        }
+
+        function isIssueRecord(item) {
+            const text = [item.finalCondition, item.aiCondition, item.notes].map(safeText).join(" ").toLowerCase();
+            return /ชำรุด|เสียหาย|ไม่ครบ|สูญหาย|ไม่ตรง|ชาร์จไม่เข้า|ใช้ไม่ได้|ผิดรุ่น|แตก|บุบ/.test(text);
+        }
+
+        function getHistoryStatus(item) {
+            if (isIssueRecord(item)) return { key: 'issue', label: 'มีปัญหา', className: 'status-issue', icon: 'bi-exclamation-circle' };
+            if (isReadyRecord(item)) return { key: 'ready', label: 'พร้อมขายต่อ', className: 'status-ready', icon: 'bi-check-circle' };
+            if (!item.isChecked) return { key: 'pending', label: 'รอตรวจ', className: 'status-pending', icon: 'bi-clock' };
+            return { key: 'checked', label: 'ตรวจแล้ว', className: 'status-checked', icon: 'bi-check2' };
+        }
+
+        function driveThumbnailUrl(url, size) {
+            const id = getDriveId(url);
+            return id ? 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w' + (size || 300) : '';
+        }
+
+        function recordSearchText(item) {
+            return [
+                item.tracking, item.orderId, item.productDetails, item.platform, item.shopName,
+                item.finalCondition, item.aiCondition, item.notes, item.date
+            ].map(safeText).join(" ").toLowerCase();
+        }
+
+        function getProductDisplay(item) {
+            const raw = safeText(item.productDetails).trim();
+            if (!raw || raw === "-") return "ยังไม่มีข้อมูลสินค้า";
+            return raw.replace(/\s+/g, " ").trim();
+        }
+
+        function getReasonDisplay(item) {
+            const notes = safeText(item.notes).trim();
+            const ai = safeText(item.aiCondition).trim();
+            if (notes && notes !== "-") return notes;
+            if (ai && ai !== "-") return ai;
+            return "ไม่มีหมายเหตุ";
+        }
+
+        function updateHistorySummary(records) {
+            const all = records || globalRecords;
+            const counts = { pending: 0, ready: 0, issue: 0, checked: 0 };
+            all.forEach(item => {
+                const key = getHistoryStatus(item).key;
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            document.getElementById('historyTotalCount').innerText = all.length;
+            document.getElementById('historyPendingCount').innerText = counts.pending || 0;
+            document.getElementById('historyReadyCount').innerText = counts.ready || 0;
+            document.getElementById('historyIssueCount').innerText = counts.issue || 0;
+        }
+
+        function getShopGroup(item) {
+            const platformKey = getPlatformKey(item.platform);
+            const raw = safeText(item.shopName || "").trim();
+            const normalized = raw.toLowerCase();
+
+            if (platformKey === 'manual') return 'ลูกค้าส่งเอง';
+            if (normalized.includes('supercharge')) return 'Supercharge';
+            if (normalized.includes('batteryman') || /(^|\s)bm($|\s)/i.test(raw)) return 'Batteryman';
+            if (normalized.includes('vapcell') || normalized.includes('vapceill') || /(^|\s)vt($|\s)/i.test(raw)) return 'Vapcellthailand';
+
+            if (['tiktok', 'shopee', 'lazada'].includes(normalized)) return raw;
+            if (!raw) return safeText(item.platform).trim() || 'อื่นๆ';
+            return platformKey === 'manual' ? 'ลูกค้าส่งเอง' : raw;
+        }
+
+        function populateHistoryShopFilter() {
+            const select = document.getElementById('historyShopFilter');
+            if (!select) return;
+            const current = select.value || "all";
+            const priority = ['Batteryman', 'Vapcellthailand', 'Supercharge', 'ลูกค้าส่งเอง', 'TikTok', 'Shopee', 'Lazada'];
+            const shops = Array.from(new Set(globalRecords.map(getShopGroup).filter(Boolean)))
+                .sort((a, b) => {
+                    const ai = priority.indexOf(a);
+                    const bi = priority.indexOf(b);
+                    if (ai >= 0 || bi >= 0) return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+                    return a.localeCompare(b, 'th');
+                });
+            select.innerHTML = '<option value="all">ทุกร้าน</option>' + shops.map(shop =>
+                '<option value="' + escapeHtml(shop) + '">' + escapeHtml(shop) + '</option>'
+            ).join('');
+            if (shops.includes(current)) select.value = current;
         }
 
         function renderList(records) {
             const listContainer = document.getElementById('recordsList');
+            const countEl = document.getElementById('historyResultCount');
+            const pagerEl = document.getElementById('historyPager');
+            historyFilteredRecords = records.slice();
+
             if(records.length === 0) {
-                listContainer.innerHTML = '<div class="text-center text-muted my-4">ยังไม่มีข้อมูลในระบบ</div>';
+                if (countEl) countEl.innerText = 'ไม่พบรายการ จากทั้งหมด ' + globalRecords.length + ' รายการ';
+                if (pagerEl) pagerEl.innerHTML = '';
+                listContainer.innerHTML = '<div class="history-empty"><i class="bi bi-search fs-4 d-block mb-2"></i>ไม่พบรายการที่ตรงกับเงื่อนไขค้นหา</div>';
                 return;
             }
-            let html = '';
-            records.forEach((item, index) => {
-                let checkedClass = item.isChecked ? 'checked-item' : '';
-                let iconClass = item.isChecked ? 'bi bi-check-circle-fill text-success' : 'bi bi-box-seam';
-                
-                html += `
-                <div class="list-item ${checkedClass}" id="listItem-${index}" onclick="openDetail(${index})">
-                    <input type="checkbox" class="form-check-input custom-checkbox" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatus(${index}, this, event)">
-                    <div class="list-icon"><i class="${iconClass}"></i></div>
-                    <div class="list-content">
-                        <h6>${item.tracking}</h6>
-                        <p>${item.date} • ${item.finalCondition}</p>
+
+            const totalPages = Math.max(1, Math.ceil(records.length / historyPageSize));
+            historyCurrentPage = Math.min(Math.max(1, historyCurrentPage), totalPages);
+            const start = (historyCurrentPage - 1) * historyPageSize;
+            const pageRecords = records.slice(start, start + historyPageSize);
+
+            if (countEl) countEl.innerText = 'พบ ' + records.length + ' จาก ' + globalRecords.length + ' รายการ · หน้า ' + historyCurrentPage + '/' + totalPages;
+            if (pagerEl) {
+                pagerEl.innerHTML =
+                    '<button type="button" class="history-action" onclick="changeHistoryPage(-1)" ' + (historyCurrentPage <= 1 ? 'disabled' : '') + ' aria-label="หน้าก่อน"><i class="bi bi-chevron-left"></i></button>' +
+                    '<span>หน้า ' + historyCurrentPage + ' / ' + totalPages + '</span>' +
+                    '<button type="button" class="history-action" onclick="changeHistoryPage(1)" ' + (historyCurrentPage >= totalPages ? 'disabled' : '') + ' aria-label="หน้าถัดไป"><i class="bi bi-chevron-right"></i></button>';
+            }
+
+            listContainer.innerHTML = pageRecords.map(item => {
+                const rowId = Number(item.rowId);
+                const checkedClass = item.isChecked ? 'checked-item' : '';
+                const thumb = driveThumbnailUrl(item.productImageUrl, 180);
+                const status = getHistoryStatus(item);
+                const tracking = safeText(item.tracking).trim() || 'ไม่มีเลขคืน';
+                const orderId = safeText(item.orderId).trim() || '-';
+                const platform = safeText(item.platform).trim() || 'อื่นๆ';
+                const shop = getShopGroup(item);
+                const finalCondition = safeText(item.finalCondition).trim() || 'ยังไม่มีผลตรวจ';
+                const product = getProductDisplay(item);
+                const reason = getReasonDisplay(item);
+
+                return `
+                <div class="history-record ${checkedClass}" id="listItem-${rowId}" onclick="openDetailByRowId(${rowId})">
+                    <input type="checkbox" class="form-check-input custom-checkbox m-0" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatusByRowId(${rowId}, this, event)" aria-label="ทำเครื่องหมายตรวจแล้ว">
+                    <div class="history-id-cell">
+                        ${thumb ? '<img class="history-thumb" src="' + escapeHtml(thumb) + '" alt="รูปสินค้า" loading="lazy">' : '<span class="history-thumb-fallback"><i class="bi bi-box-seam"></i></span>'}
+                        <div class="history-id-copy">
+                            <div class="history-primary">${escapeHtml(tracking)}</div>
+                            <div class="history-secondary">${escapeHtml(item.date || '-')} · Order: ${escapeHtml(orderId)}</div>
+                            <div class="history-mobile-details">
+                                <div class="history-mobile-product">${escapeHtml(product)}</div>
+                                <span class="history-badge ${status.className}"><i class="bi ${status.icon}"></i>${escapeHtml(status.label)}</span>
+                                <span class="history-mobile-reason">${escapeHtml(reason)}</span>
+                            </div>
+                        </div>
                     </div>
-                    <span class="platform-tag ${getPlatformClass(item.platform)}">${item.platform || 'อื่นๆ'}</span>
+                    <div class="history-col-product">
+                        <div class="history-product-name">${escapeHtml(product)}</div>
+                        <div class="history-product-sub">${escapeHtml(finalCondition)}</div>
+                    </div>
+                    <div class="history-col-reason"><div class="history-reason">${escapeHtml(reason)}</div></div>
+                    <div class="history-col-condition">
+                        <span class="history-badge ${status.className}"><i class="bi ${status.icon}"></i>${escapeHtml(status.label)}</span>
+                    </div>
+                    <div><span class="platform-tag ${getPlatformClass(platform)}">${escapeHtml(platform)}</span></div>
+                    <div class="history-col-shop"><span class="history-badge shop-badge">${escapeHtml(shop)}</span></div>
+                    <div><button class="history-action" type="button" onclick="openDetailByRowId(${rowId}); event.stopPropagation();" aria-label="ดูรายละเอียด"><i class="bi bi-chevron-right"></i></button></div>
                 </div>`;
-            });
-            listContainer.innerHTML = html;
+            }).join('');
         }
 
-        function toggleCheckStatus(index, checkboxEle, event) {
-            event.stopPropagation(); 
+        function setHistoryPlatform(platformKey, button) {
+            historyPlatformFilter = platformKey;
+            document.querySelectorAll('.history-chip[data-platform]').forEach(el => el.classList.remove('active'));
+            if (button) button.classList.add('active');
+            applyHistoryFilters();
+        }
+
+        function changeHistoryPageSize() {
+            historyPageSize = Number(document.getElementById('historyPageSize')?.value || 20);
+            historyCurrentPage = 1;
+            renderList(historyFilteredRecords);
+        }
+
+        function changeHistoryPage(direction) {
+            const totalPages = Math.max(1, Math.ceil(historyFilteredRecords.length / historyPageSize));
+            historyCurrentPage = Math.min(totalPages, Math.max(1, historyCurrentPage + direction));
+            renderList(historyFilteredRecords);
+            const historyTop = document.querySelector('.history-toolbar');
+            if (historyTop) historyTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function applyHistoryFilters(resetPage = true) {
+            const query = safeText(document.getElementById('searchInput')?.value).trim().toLowerCase();
+            const shop = safeText(document.getElementById('historyShopFilter')?.value || 'all');
+            const statusFilter = safeText(document.getElementById('historyStatusFilter')?.value || 'all');
+            const sort = safeText(document.getElementById('historySort')?.value || 'latest');
+
+            let filtered = globalRecords.filter(item => {
+                if (query && !recordSearchText(item).includes(query)) return false;
+                if (historyPlatformFilter !== 'all' && getPlatformKey(item.platform) !== historyPlatformFilter) return false;
+                if (shop !== 'all' && getShopGroup(item) !== shop) return false;
+                if (statusFilter !== 'all' && getHistoryStatus(item).key !== statusFilter) return false;
+                return true;
+            });
+
+            if (sort === 'oldest') filtered = filtered.slice().reverse();
+            else if (sort === 'platform') filtered = filtered.slice().sort((a,b) => safeText(a.platform).localeCompare(safeText(b.platform), 'th'));
+            else if (sort === 'product') filtered = filtered.slice().sort((a,b) => getProductDisplay(a).localeCompare(getProductDisplay(b), 'th'));
+
+            if (resetPage) historyCurrentPage = 1;
+            renderList(filtered);
+        }
+
+        function getRecordByRowId(rowId) {
+            return globalRecords.find(item => Number(item.rowId) === Number(rowId));
+        }
+
+        function toggleCheckStatusByRowId(rowId, checkboxEle, event) {
+            event.stopPropagation();
+            const item = getRecordByRowId(rowId);
+            if (!item) return;
+
             const isChecked = checkboxEle.checked;
-            globalRecords[index].isChecked = isChecked;
-            
-            const listItem = document.getElementById('listItem-' + index);
-            const iconEle = listItem.querySelector('.list-icon i');
-            
-            if (isChecked) {
-                listItem.classList.add('checked-item');
-                iconEle.className = 'bi bi-check-circle-fill text-success';
-            } else {
-                listItem.classList.remove('checked-item');
-                iconEle.className = 'bi bi-box-seam';
-            }
-            
+            item.isChecked = isChecked;
+            const listItem = document.getElementById('listItem-' + rowId);
+            if (listItem) listItem.classList.toggle('checked-item', isChecked);
+
+            updateHistorySummary(globalRecords);
+            applyHistoryFilters(false);
+
             fetch(WEB_APP_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: "toggleCheck", rowId: globalRecords[index].rowId, isChecked: isChecked })
-            });
+                body: JSON.stringify({ action: "toggleCheck", rowId: item.rowId, isChecked })
+            }).catch(error => console.error("toggleCheck failed", error));
         }
 
         function filterRecords() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = globalRecords.filter(item => item.tracking.toLowerCase().includes(query) || item.orderId.toLowerCase().includes(query));
-            renderList(filtered);
+            applyHistoryFilters();
         }
 
         const stepTitles = ["ถ่ายรูปกล่องพัสดุ", "ตรวจสอบเลขคืนสินค้า", "ถ่ายวิดีโอเปิดกล่อง", "ถ่ายรูปสินค้าภายใน", "ประเมินสภาพสินค้า"];
@@ -944,41 +1504,79 @@
             return match ? match[1] : null;
         }
 
-        function openDetail(index) {
-            const item = globalRecords[index];
-            currentDetailRowId = item.rowId; 
-            
-            document.getElementById('detailTracking').innerText = item.tracking;
-            document.getElementById('detailPlatform').innerText = item.platform;
-            
+        function openDetailByRowId(rowId) {
+            const item = getRecordByRowId(rowId);
+            if (!item) return;
+            currentDetailRowId = item.rowId;
+
+            const tracking = safeText(item.tracking).trim() || "ไม่มีเลขคืน";
+            const platform = safeText(item.platform).trim() || "อื่นๆ";
+            const status = getHistoryStatus(item);
+            const productThumb = driveThumbnailUrl(item.productImageUrl, 500);
+
+            document.getElementById('detailTracking').innerText = tracking;
+            document.getElementById('detailOrderSummary').innerText = 'Order: ' + (safeText(item.orderId).trim() || '-') + ' · ' + (safeText(item.date).trim() || '-');
+
+            const platformBadge = document.getElementById('detailPlatform');
+            platformBadge.innerText = platform;
+            platformBadge.className = 'platform-tag ' + getPlatformClass(platform);
+
             const condBadge = document.getElementById('detailConditionBadge');
-            condBadge.innerText = item.finalCondition;
-            if (item.finalCondition.includes("สมบูรณ์")) {
-                condBadge.style.backgroundColor = "#d4edda"; condBadge.style.color = "#155724";
+            condBadge.innerHTML = '<i class="bi ' + status.icon + '"></i>' + escapeHtml(status.label);
+            condBadge.className = 'history-badge ' + status.className;
+
+            const heroThumb = document.getElementById('detailHeroThumb');
+            const heroFallback = document.getElementById('detailHeroThumbFallback');
+            if (productThumb) {
+                heroThumb.src = productThumb;
+                heroThumb.classList.remove('d-none');
+                heroFallback.classList.add('d-none');
             } else {
-                condBadge.style.backgroundColor = "#f8d7da"; condBadge.style.color = "#721c24";
+                heroThumb.src = '';
+                heroThumb.classList.add('d-none');
+                heroFallback.classList.remove('d-none');
             }
 
-            let boxId = getDriveId(item.boxImageUrl);
-            if(boxId) { document.getElementById('detailBoxImg').src = 'https://drive.google.com/thumbnail?id=' + boxId + '&sz=w800'; document.getElementById('detailBoxContainer').classList.remove('d-none');
-            } else { document.getElementById('detailBoxContainer').classList.add('d-none'); }
+            const boxId = getDriveId(item.boxImageUrl);
+            if(boxId) {
+                document.getElementById('detailBoxImg').src = 'https://drive.google.com/thumbnail?id=' + boxId + '&sz=w1000';
+                document.getElementById('detailBoxContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('detailBoxImg').src = '';
+                document.getElementById('detailBoxContainer').classList.add('d-none');
+            }
 
-            let videoId = getDriveId(item.videoUrl);
-            if(videoId) { document.getElementById('detailVideoFrame').src = 'https://drive.google.com/file/d/' + videoId + '/preview'; document.getElementById('detailVideoContainer').classList.remove('d-none');
-            } else { document.getElementById('detailVideoContainer').classList.add('d-none'); }
+            const videoId = getDriveId(item.videoUrl);
+            if(videoId) {
+                document.getElementById('detailVideoFrame').src = 'https://drive.google.com/file/d/' + videoId + '/preview';
+                document.getElementById('detailVideoContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('detailVideoFrame').src = '';
+                document.getElementById('detailVideoContainer').classList.add('d-none');
+            }
 
-            let prodId = getDriveId(item.productImageUrl);
-            if(prodId) { document.getElementById('detailProdImg').src = 'https://drive.google.com/thumbnail?id=' + prodId + '&sz=w800'; document.getElementById('detailProdContainer').classList.remove('d-none');
-            } else { document.getElementById('detailProdContainer').classList.add('d-none'); }
+            const prodId = getDriveId(item.productImageUrl);
+            if(prodId) {
+                document.getElementById('detailProdImg').src = 'https://drive.google.com/thumbnail?id=' + prodId + '&sz=w1000';
+                document.getElementById('detailProdContainer').classList.remove('d-none');
+            } else {
+                document.getElementById('detailProdImg').src = '';
+                document.getElementById('detailProdContainer').classList.add('d-none');
+            }
 
-            document.getElementById('detailAiInfo').innerText = item.aiCondition && item.aiCondition !== "-" ? item.aiCondition : "ไม่มีข้อมูลประเมิน";
-            document.getElementById('detailOrderId').innerText = item.orderId;
-            document.getElementById('detailShop').innerText = item.shopName || item.platform;
-            document.getElementById('detailProductDetails').innerText = item.productDetails || "-";
-            document.getElementById('detailDate').innerText = item.date;
-            document.getElementById('detailNotes').innerText = item.notes;
+            document.getElementById('detailAiInfo').innerText = safeText(item.aiCondition).trim() || "ไม่มีข้อมูลประเมิน";
+            document.getElementById('detailOrderId').innerText = safeText(item.orderId).trim() || "-";
+            document.getElementById('detailShop').innerText = safeText(item.shopName || item.platform).trim() || "-";
+            document.getElementById('detailProductDetails').innerText = getProductDisplay(item);
+            document.getElementById('detailDate').innerText = safeText(item.date).trim() || "-";
+            document.getElementById('detailNotes').innerText = getReasonDisplay(item);
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+
+        function openDetail(index) {
+            const item = globalRecords[index];
+            if (item) openDetailByRowId(item.rowId);
         }
 
         async function deleteCurrentRecord() {
