@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <title>ReturnFlow - ระบบรับสินค้าคืน</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -399,6 +400,61 @@
         .history-detail-field-value { font-size: .74rem; font-weight: 700; color: #373b38; word-break: break-word; }
         .history-detail-media { border-radius: 14px !important; box-shadow: none !important; border: 1px solid var(--history-border) !important; }
         .history-detail-note { background: #f2eee6; border-radius: 13px; padding: 12px; font-size: .72rem; color: #626761; }
+        .history-risk-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+        .history-risk-chip {
+            border:1px solid #dfd8ca; background:#faf8f3; color:#6a6e6a; border-radius:999px;
+            padding:6px 10px; font-size:.64rem; font-weight:700;
+        }
+        .history-risk-chip.active { background:#2f5f48; color:#fff; border-color:#2f5f48; }
+        .history-advanced-row {
+            display:grid; grid-template-columns:minmax(160px,1fr) minmax(150px,.8fr) minmax(130px,.7fr) minmax(130px,.7fr) auto auto;
+            gap:8px; margin-top:8px; align-items:center;
+        }
+        .history-date-input {
+            min-height:32px; border-radius:10px; border:1px solid #ded8cc; background:#fff; color:#555a56;
+            padding:5px 10px; font-size:.7rem; font-weight:600;
+        }
+        .history-btn-small {
+            min-height:32px; border-radius:10px; border:1px solid #d8d1c4; background:#fff; color:#555a56;
+            padding:6px 10px; font-size:.67rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:5px;
+        }
+        .history-btn-small.primary { background:#2f5f48; border-color:#2f5f48; color:#fff; }
+        .history-bulk-bar {
+            display:none; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 12px; margin:0 0 10px;
+            border:1px solid #dfd7c8; background:#fffaf0; border-radius:14px;
+        }
+        .history-bulk-bar.show { display:flex; }
+        .history-bulk-count { font-size:.7rem; font-weight:700; color:#655331; margin-right:auto; }
+        .history-compare {
+            display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:5px;
+        }
+        .history-compare-box {
+            border:1px solid #e9e3d7; background:#faf8f4; border-radius:9px; padding:5px 7px; min-width:0;
+        }
+        .history-compare-label { font-size:.52rem; color:#969a96; font-weight:700; text-transform:uppercase; }
+        .history-compare-value { font-size:.61rem; color:#4d514e; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .quality-good { background:#e8f5ea; color:#2f7d46; }
+        .quality-warn { background:#fff1dd; color:#9a641a; }
+        .quality-bad { background:#fdeceb; color:#b5413c; }
+        mark.history-highlight { background:#ffe39a; color:inherit; padding:0 1px; border-radius:2px; }
+        .history-age { font-size:.57rem; color:#8c918d; margin-top:2px; }
+        .history-age.overdue { color:#b34a45; font-weight:700; }
+        .history-thumb-wrap { position:relative; flex:0 0 auto; }
+        .history-image-hover {
+            position:absolute; left:52px; top:-18px; width:220px; height:220px; object-fit:contain; background:#fff;
+            border:1px solid #ddd5c8; border-radius:14px; box-shadow:0 16px 36px rgba(45,48,46,.18);
+            opacity:0; visibility:hidden; pointer-events:none; transition:.15s ease; z-index:40;
+        }
+        .history-thumb-wrap:hover .history-image-hover { opacity:1; visibility:visible; }
+        .history-export-group { display:flex; gap:6px; }
+        .history-select-all { width:16px; height:16px; }
+        .history-detail-compare { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .history-detail-compare-card { border:1px solid var(--history-border); background:#fff; border-radius:14px; padding:12px; }
+        .history-detail-compare-title { font-size:.62rem; color:#8e938f; margin-bottom:4px; font-weight:700; }
+        .history-detail-compare-value { font-size:.78rem; font-weight:700; color:#343936; word-break:break-word; }
+        .history-detail-metric { font-size:.65rem; color:#717671; margin-top:5px; }
+        .history-saved-actions { display:flex; gap:6px; align-items:center; }
+        .history-data-quality { margin-top:4px; }
 
         @media (max-width: 1100px) {
             .history-table-head { display: none; }
@@ -414,6 +470,12 @@
             .history-filter-row { gap: 6px; }
             .history-toolbar-spacer { display: none; }
             .history-filter-select { flex: 1 1 46%; min-width: 130px; }
+            .history-advanced-row { grid-template-columns:1fr 1fr; }
+            .history-advanced-row .history-saved-actions, .history-advanced-row .history-export-group { grid-column:1 / -1; }
+            .history-risk-row { overflow-x:auto; flex-wrap:nowrap; padding-bottom:2px; }
+            .history-risk-chip { flex:0 0 auto; }
+            .history-image-hover { display:none; }
+            .history-bulk-bar { position:sticky; top:8px; z-index:25; }
             .history-record {
                 grid-template-columns: 28px minmax(0, 1fr) 82px 28px;
                 gap: 8px;
@@ -511,27 +573,46 @@
                     <button type="button" class="history-chip" data-platform="shopee" onclick="setHistoryPlatform('shopee', this)">Shopee</button>
                     <button type="button" class="history-chip" data-platform="manual" onclick="setHistoryPlatform('manual', this)">ลูกค้าส่งเอง</button>
                     <div class="history-toolbar-spacer"></div>
-                    <select id="historyShopFilter" class="history-filter-select" onchange="applyHistoryFilters()">
-                        <option value="all">ทุกร้าน</option>
-                    </select>
+                    <select id="historyShopFilter" class="history-filter-select" onchange="applyHistoryFilters()"><option value="all">ทุกร้าน</option></select>
                     <select id="historyStatusFilter" class="history-filter-select" onchange="applyHistoryFilters()">
-                        <option value="all">ทุกสถานะ</option>
-                        <option value="pending">รอตรวจ</option>
-                        <option value="ready">พร้อมขายต่อ</option>
-                        <option value="issue">มีปัญหา</option>
-                        <option value="checked">ตรวจแล้ว</option>
+                        <option value="all">ทุกสถานะ</option><option value="pending">รอตรวจ</option><option value="ready">พร้อมขายต่อ</option><option value="issue">มีปัญหา</option><option value="checked">ตรวจแล้ว</option>
                     </select>
                     <select id="historySort" class="history-filter-select" onchange="applyHistoryFilters()">
-                        <option value="latest">ล่าสุดก่อน</option>
-                        <option value="oldest">เก่าสุดก่อน</option>
-                        <option value="platform">เรียงตามแพลตฟอร์ม</option>
-                        <option value="product">เรียงตามสินค้า</option>
+                        <option value="latest">ล่าสุดก่อน</option><option value="oldest">เก่าสุดก่อน</option><option value="platform">เรียงตามแพลตฟอร์ม</option><option value="product">เรียงตามสินค้า</option><option value="age">อายุเคสมากก่อน</option>
                     </select>
                     <select id="historyPageSize" class="history-filter-select" onchange="changeHistoryPageSize()">
-                        <option value="20">20 รายการ/หน้า</option>
-                        <option value="50">50 รายการ/หน้า</option>
-                        <option value="100">100 รายการ/หน้า</option>
+                        <option value="20">20 รายการ/หน้า</option><option value="50">50 รายการ/หน้า</option><option value="100">100 รายการ/หน้า</option>
                     </select>
+                </div>
+                <div class="history-risk-row">
+                    <button type="button" class="history-risk-chip active" data-risk="all" onclick="setHistoryRisk('all', this)">ทุกความเสี่ยง</button>
+                    <button type="button" class="history-risk-chip" data-risk="sku" onclick="setHistoryRisk('sku', this)">SKU ไม่ตรง</button>
+                    <button type="button" class="history-risk-chip" data-risk="qty" onclick="setHistoryRisk('qty', this)">จำนวนไม่ตรง</button>
+                    <button type="button" class="history-risk-chip" data-risk="accessory" onclick="setHistoryRisk('accessory', this)">อุปกรณ์ไม่ครบ</button>
+                    <button type="button" class="history-risk-chip" data-risk="charge" onclick="setHistoryRisk('charge', this)">ชาร์จไม่เข้า</button>
+                    <button type="button" class="history-risk-chip" data-risk="damage" onclick="setHistoryRisk('damage', this)">ชำรุด</button>
+                    <button type="button" class="history-risk-chip" data-risk="quality" onclick="setHistoryRisk('quality', this)">ข้อมูลไม่ครบ</button>
+                </div>
+                <div class="history-advanced-row">
+                    <select id="historySavedView" class="history-filter-select" onchange="applySavedView(this.value)">
+                        <option value="">Saved View</option>
+                        <option value="pendingToday">รอตรวจวันนี้</option>
+                        <option value="risk">เคสมีปัญหา</option>
+                        <option value="sku">เคสผิด SKU</option>
+                        <option value="tiktokBatteryman">TikTok Batteryman</option>
+                        <option value="ready">พร้อมขายต่อ</option>
+                    </select>
+                    <div class="history-saved-actions"><button class="history-btn-small" type="button" onclick="saveCurrentView()"><i class="bi bi-bookmark-plus"></i>บันทึก View</button></div>
+                    <input type="date" id="historyDateFrom" class="history-date-input" onchange="applyHistoryFilters()">
+                    <input type="date" id="historyDateTo" class="history-date-input" onchange="applyHistoryFilters()">
+                    <div class="history-export-group">
+                        <button class="history-btn-small" type="button" onclick="setQuickDateRange(7)">7 วัน</button>
+                        <button class="history-btn-small" type="button" onclick="setQuickDateRange(30)">30 วัน</button>
+                    </div>
+                    <div class="history-export-group">
+                        <button class="history-btn-small" type="button" onclick="exportHistory('csv')"><i class="bi bi-filetype-csv"></i>CSV</button>
+                        <button class="history-btn-small" type="button" onclick="exportHistory('xlsx')"><i class="bi bi-file-earmark-excel"></i>XLSX</button>
+                    </div>
                 </div>
             </div>
 
@@ -539,9 +620,24 @@
                 <span id="historyResultCount">กำลังดึงข้อมูล...</span>
                 <span id="historyPager" class="d-inline-flex align-items-center gap-2"></span>
             </div>
+            <div id="historyBulkBar" class="history-bulk-bar">
+                <span class="history-bulk-count" id="historyBulkCount">เลือก 0 รายการ</span>
+                <button type="button" class="history-btn-small primary" onclick="bulkMarkChecked(true)"><i class="bi bi-check2-square"></i>ตรวจแล้ว</button>
+                <button type="button" class="history-btn-small" onclick="bulkMarkChecked(false)">ยกเลิกตรวจแล้ว</button>
+                <select id="historyBulkStatus" class="history-filter-select">
+                    <option value="">เปลี่ยนสถานะ...</option>
+                    <option value="สมบูรณ์ พร้อมขายต่อ">พร้อมขายต่อ</option>
+                    <option value="สินค้าชำรุด/เสียหาย">สินค้าชำรุด/เสียหาย</option>
+                    <option value="สินค้าไม่ครบ/สูญหาย">สินค้าไม่ครบ/สูญหาย</option>
+                    <option value="กล่องบุบ/เสียหาย แต่สินค้าปกติ">กล่องเสียหาย สินค้าปกติ</option>
+                </select>
+                <button type="button" class="history-btn-small" onclick="bulkApplyStatus()">ใช้สถานะ</button>
+                <button type="button" class="history-btn-small" onclick="bulkAppendNote()"><i class="bi bi-pencil-square"></i>เพิ่มหมายเหตุ</button>
+                <button type="button" class="history-btn-small" onclick="clearBulkSelection()">ล้างที่เลือก</button>
+            </div>
 
             <div class="history-table-head">
-                <span></span>
+                <span><input id="historySelectAll" class="form-check-input history-select-all" type="checkbox" onchange="toggleSelectAllVisible(this.checked)" aria-label="เลือกทั้งหมดในหน้านี้"></span>
                 <span>เลขคืน / ออเดอร์</span>
                 <span>สินค้า</span>
                 <span>เหตุผล / หมายเหตุ</span>
@@ -708,6 +804,13 @@
                                 <option value="สินค้าไม่ครบ/สูญหาย">สินค้าไม่ครบ/สูญหาย</option>
                             </select>
                             
+                            <div class="row g-2 mb-3">
+                                <div class="col-12"><label class="form-label fw-bold">สินค้าที่ระบบคาดว่าจะได้รับ</label><input type="text" id="expectedSku" class="form-control bg-light border-0" placeholder="เช่น M35 / G53"></div>
+                                <div class="col-12"><label class="form-label fw-bold">สินค้าที่ได้รับจริง</label><input type="text" id="receivedSku" class="form-control bg-light border-0" placeholder="ตรวจจากสินค้าจริง"></div>
+                                <div class="col-6"><label class="form-label fw-bold">จำนวนที่ควรได้</label><input type="number" min="0" id="expectedQty" class="form-control bg-light border-0"></div>
+                                <div class="col-6"><label class="form-label fw-bold">จำนวนที่ได้รับ</label><input type="number" min="0" id="receivedQty" class="form-control bg-light border-0"></div>
+                                <div class="col-12"><label class="form-label fw-bold">อุปกรณ์เสริม</label><select id="accessories" class="form-select bg-light border-0"><option value="">ยังไม่ตรวจ</option><option value="ครบ">ครบ</option><option value="ไม่ครบ">ไม่ครบ</option><option value="ไม่มีอุปกรณ์เสริม">ไม่มีอุปกรณ์เสริม</option></select></div>
+                            </div>
                             <label class="form-label fw-bold">หมายเหตุ (ถ้ามี):</label>
                             <textarea id="notes" class="form-control bg-light border-0" rows="3" placeholder="ระบุรายละเอียดเพิ่มเติม..."></textarea>
                             
@@ -773,6 +876,21 @@
                         </div>
                     </div>
 
+                    <div class="history-detail-section-title">Expected vs Received</div>
+                    <div class="history-detail-compare">
+                        <div class="history-detail-compare-card">
+                            <div class="history-detail-compare-title">ควรได้รับ</div>
+                            <div class="history-detail-compare-value" id="detailExpectedSku">-</div>
+                            <div class="history-detail-metric" id="detailExpectedQty">จำนวน: -</div>
+                        </div>
+                        <div class="history-detail-compare-card">
+                            <div class="history-detail-compare-title">ได้รับจริง</div>
+                            <div class="history-detail-compare-value" id="detailReceivedSku">ยังไม่ได้บันทึก</div>
+                            <div class="history-detail-metric" id="detailReceivedQty">จำนวน: -</div>
+                        </div>
+                    </div>
+                    <div class="history-detail-note mt-2"><b>อุปกรณ์เสริม:</b> <span id="detailAccessories">ยังไม่ได้ตรวจ</span></div>
+
                     <div class="history-detail-section-title">หมายเหตุ / เหตุผล</div>
                     <div class="history-detail-note" id="detailNotes">-</div>
 
@@ -813,9 +931,12 @@
         let rawVideoFile = null; 
         let globalRecords = [];
         let historyPlatformFilter = "all";
+        let historyRiskFilter = "all";
         let historyCurrentPage = 1;
         let historyPageSize = 20;
         let historyFilteredRecords = [];
+        let historyVisiblePageRecords = [];
+        let historySelectedRowIds = new Set();
         let currentStep = 1;
         const totalSteps = 5;
         let wizardModalInstance = null;
@@ -846,6 +967,7 @@
                     updateDashboardStats();
                     updateHistorySummary(globalRecords);
                     populateHistoryShopFilter();
+                    populateSavedViews();
                     applyHistoryFilters();
                 } else {
                     document.getElementById('recordsList').innerHTML = `<div class="text-center text-danger my-4">❌ โหลดไม่ได้: ${result.message}</div>`;
@@ -895,9 +1017,24 @@
             return /สมบูรณ์|พร้อมขายต่อ|สภาพดี|ปกติ/.test(text);
         }
 
+        function getRiskFlags(item) {
+            const text = [item.finalCondition, item.aiCondition, item.notes, item.productDetails, item.expectedSku, item.receivedSku, item.accessories].map(safeText).join(" ").toLowerCase();
+            const expectedSku = safeText(item.expectedSku).trim().toLowerCase();
+            const receivedSku = safeText(item.receivedSku).trim().toLowerCase();
+            const expectedQty = Number(item.expectedQty);
+            const receivedQty = Number(item.receivedQty);
+            return {
+                sku: (!!expectedSku && !!receivedSku && expectedSku !== receivedSku) || /sku.{0,12}ไม่ตรง|ผิดรุ่น|ได้.+แทน/.test(text),
+                qty: (safeText(item.expectedQty).trim() !== "" && safeText(item.receivedQty).trim() !== "" && Number.isFinite(expectedQty) && Number.isFinite(receivedQty) && expectedQty !== receivedQty) || /จำนวน.{0,12}(ไม่ตรง|ไม่ครบ|ขาด)|ของไม่ครบ/.test(text),
+                accessory: safeText(item.accessories).trim() === "ไม่ครบ" || /อุปกรณ์.{0,12}ไม่ครบ|อุปกรณ์หาย/.test(text),
+                charge: /ชาร์จไม่เข้า|ชาร์จไม่ได้|ไฟไม่เข้า/.test(text),
+                damage: /ชำรุด|เสียหาย|แตก|บุบ|ใช้ไม่ได้/.test(text)
+            };
+        }
+
         function isIssueRecord(item) {
-            const text = [item.finalCondition, item.aiCondition, item.notes].map(safeText).join(" ").toLowerCase();
-            return /ชำรุด|เสียหาย|ไม่ครบ|สูญหาย|ไม่ตรง|ชาร์จไม่เข้า|ใช้ไม่ได้|ผิดรุ่น|แตก|บุบ/.test(text);
+            const broadText = [item.finalCondition, item.aiCondition, item.notes].map(safeText).join(" ").toLowerCase();
+            return Object.values(getRiskFlags(item)).some(Boolean) || /ชำรุด|เสียหาย|ไม่ครบ|สูญหาย|ไม่ตรง|ชาร์จไม่เข้า|ใช้ไม่ได้|ผิดรุ่น|แตก|บุบ/.test(broadText);
         }
 
         function getHistoryStatus(item) {
@@ -915,7 +1052,8 @@
         function recordSearchText(item) {
             return [
                 item.tracking, item.orderId, item.productDetails, item.platform, item.shopName,
-                item.finalCondition, item.aiCondition, item.notes, item.date
+                item.finalCondition, item.aiCondition, item.notes, item.date,
+                item.expectedSku, item.receivedSku, item.expectedQty, item.receivedQty, item.accessories
             ].map(safeText).join(" ").toLowerCase();
         }
 
@@ -931,6 +1069,66 @@
             if (notes && notes !== "-") return notes;
             if (ai && ai !== "-") return ai;
             return "ไม่มีหมายเหตุ";
+        }
+
+        function getExpectedDisplay(item) {
+            return safeText(item.expectedSku).trim() || getProductDisplay(item);
+        }
+
+        function getReceivedDisplay(item) {
+            return safeText(item.receivedSku).trim() || "ยังไม่ได้บันทึก";
+        }
+
+        function getDataQuality(item) {
+            const missing = [];
+            if (!safeText(item.tracking || item.orderId).trim()) missing.push("เลขอ้างอิง");
+            if (!safeText(item.productDetails).trim() || safeText(item.productDetails).trim() === "-") missing.push("สินค้า");
+            if (!safeText(item.finalCondition).trim()) missing.push("ผลตรวจ");
+            if (!safeText(item.productImageUrl).trim()) missing.push("รูปสินค้า");
+            const inspectionStarted = [item.expectedSku, item.receivedSku, item.expectedQty, item.receivedQty, item.accessories].some(v => safeText(v).trim() !== "");
+            if (inspectionStarted) {
+                if (!safeText(item.receivedSku).trim()) missing.push("สินค้าที่ได้รับจริง");
+                if (!safeText(item.receivedQty).trim()) missing.push("จำนวนที่ได้รับ");
+                if (!safeText(item.accessories).trim()) missing.push("อุปกรณ์");
+            }
+            if (missing.length === 0) return { key:"good", label:"ข้อมูลครบ", className:"quality-good", missing:[] };
+            if (missing.length <= 2) return { key:"warn", label:"ขาด " + missing.length + " จุด", className:"quality-warn", missing };
+            return { key:"bad", label:"ข้อมูลไม่ครบ", className:"quality-bad", missing };
+        }
+
+        function parseRecordDate(item) {
+            if (item.dateIso) {
+                const parsed = new Date(item.dateIso);
+                if (!isNaN(parsed.getTime())) return parsed;
+            }
+            const match = safeText(item.date).match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/);
+            if (!match) return null;
+            return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), Number(match[4] || 0), Number(match[5] || 0));
+        }
+
+        function getCaseAge(item) {
+            const date = parseRecordDate(item);
+            if (!date) return { days:null, label:"-" };
+            const days = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
+            return { days, label: days === 0 ? "วันนี้" : days + " วัน" };
+        }
+
+        function highlightHistoryText(value) {
+            const raw = safeText(value);
+            const query = safeText(document.getElementById('searchInput')?.value).trim();
+            if (!query) return escapeHtml(raw);
+            const lowerRaw = raw.toLowerCase();
+            const lowerQuery = query.toLowerCase();
+            let cursor = 0;
+            let output = '';
+            while (true) {
+                const hit = lowerRaw.indexOf(lowerQuery, cursor);
+                if (hit < 0) { output += escapeHtml(raw.slice(cursor)); break; }
+                output += escapeHtml(raw.slice(cursor, hit));
+                output += '<mark class="history-highlight">' + escapeHtml(raw.slice(hit, hit + query.length)) + '</mark>';
+                cursor = hit + query.length;
+            }
+            return output;
         }
 
         function updateHistorySummary(records) {
@@ -996,6 +1194,7 @@
             historyCurrentPage = Math.min(Math.max(1, historyCurrentPage), totalPages);
             const start = (historyCurrentPage - 1) * historyPageSize;
             const pageRecords = records.slice(start, start + historyPageSize);
+            historyVisiblePageRecords = pageRecords.slice();
 
             if (countEl) countEl.innerText = 'พบ ' + records.length + ' จาก ' + globalRecords.length + ' รายการ · หน้า ' + historyCurrentPage + '/' + totalPages;
             if (pagerEl) {
@@ -1009,7 +1208,10 @@
                 const rowId = Number(item.rowId);
                 const checkedClass = item.isChecked ? 'checked-item' : '';
                 const thumb = driveThumbnailUrl(item.productImageUrl, 180);
+                const hoverThumb = driveThumbnailUrl(item.productImageUrl, 700);
                 const status = getHistoryStatus(item);
+                const quality = getDataQuality(item);
+                const age = getCaseAge(item);
                 const tracking = safeText(item.tracking).trim() || 'ไม่มีเลขคืน';
                 const orderId = safeText(item.orderId).trim() || '-';
                 const platform = safeText(item.platform).trim() || 'อื่นๆ';
@@ -1017,40 +1219,58 @@
                 const finalCondition = safeText(item.finalCondition).trim() || 'ยังไม่มีผลตรวจ';
                 const product = getProductDisplay(item);
                 const reason = getReasonDisplay(item);
+                const expected = getExpectedDisplay(item);
+                const received = getReceivedDisplay(item);
+                const selected = historySelectedRowIds.has(rowId);
 
                 return `
                 <div class="history-record ${checkedClass}" id="listItem-${rowId}" onclick="openDetailByRowId(${rowId})">
-                    <input type="checkbox" class="form-check-input custom-checkbox m-0" ${item.isChecked ? 'checked' : ''} onclick="toggleCheckStatusByRowId(${rowId}, this, event)" aria-label="ทำเครื่องหมายตรวจแล้ว">
+                    <input type="checkbox" class="form-check-input custom-checkbox m-0" ${selected ? 'checked' : ''} onclick="toggleBulkSelectionByRowId(${rowId}, this, event)" aria-label="เลือกสำหรับจัดการหลายรายการ">
                     <div class="history-id-cell">
-                        ${thumb ? '<img class="history-thumb" src="' + escapeHtml(thumb) + '" alt="รูปสินค้า" loading="lazy">' : '<span class="history-thumb-fallback"><i class="bi bi-box-seam"></i></span>'}
+                        ${thumb ? '<span class="history-thumb-wrap"><img class="history-thumb" src="' + escapeHtml(thumb) + '" alt="รูปสินค้า" loading="lazy">' + (hoverThumb ? '<img class="history-image-hover" src="' + escapeHtml(hoverThumb) + '" alt="ดูรูปขยาย">' : '') + '</span>' : '<span class="history-thumb-fallback"><i class="bi bi-box-seam"></i></span>'}
                         <div class="history-id-copy">
-                            <div class="history-primary">${escapeHtml(tracking)}</div>
-                            <div class="history-secondary">${escapeHtml(item.date || '-')} · Order: ${escapeHtml(orderId)}</div>
+                            <div class="history-primary">${highlightHistoryText(tracking)}</div>
+                            <div class="history-secondary">${highlightHistoryText(item.date || '-')} · Order: ${highlightHistoryText(orderId)}</div>
+                            <div class="history-age ${age.days !== null && age.days >= 7 ? 'overdue' : ''}">อายุเคส: ${escapeHtml(age.label)}</div>
                             <div class="history-mobile-details">
-                                <div class="history-mobile-product">${escapeHtml(product)}</div>
+                                <div class="history-mobile-product">${highlightHistoryText(product)}</div>
                                 <span class="history-badge ${status.className}"><i class="bi ${status.icon}"></i>${escapeHtml(status.label)}</span>
-                                <span class="history-mobile-reason">${escapeHtml(reason)}</span>
+                                <span class="history-mobile-reason">${highlightHistoryText(reason)}</span>
                             </div>
                         </div>
                     </div>
                     <div class="history-col-product">
-                        <div class="history-product-name">${escapeHtml(product)}</div>
-                        <div class="history-product-sub">${escapeHtml(finalCondition)}</div>
+                        <div class="history-product-name">${highlightHistoryText(product)}</div>
+                        <div class="history-compare">
+                            <div class="history-compare-box"><div class="history-compare-label">Expected</div><div class="history-compare-value">${highlightHistoryText(expected)}</div></div>
+                            <div class="history-compare-box"><div class="history-compare-label">Received</div><div class="history-compare-value">${highlightHistoryText(received)}</div></div>
+                        </div>
                     </div>
-                    <div class="history-col-reason"><div class="history-reason">${escapeHtml(reason)}</div></div>
+                    <div class="history-col-reason"><div class="history-reason">${highlightHistoryText(reason)}</div><div class="history-data-quality"><span class="history-badge ${quality.className}" title="${escapeHtml(quality.missing.join(', '))}">${escapeHtml(quality.label)}</span></div></div>
                     <div class="history-col-condition">
                         <span class="history-badge ${status.className}"><i class="bi ${status.icon}"></i>${escapeHtml(status.label)}</span>
+                        <div class="history-product-sub">${highlightHistoryText(finalCondition)}</div>
                     </div>
                     <div><span class="platform-tag ${getPlatformClass(platform)}">${escapeHtml(platform)}</span></div>
                     <div class="history-col-shop"><span class="history-badge shop-badge">${escapeHtml(shop)}</span></div>
                     <div><button class="history-action" type="button" onclick="openDetailByRowId(${rowId}); event.stopPropagation();" aria-label="ดูรายละเอียด"><i class="bi bi-chevron-right"></i></button></div>
                 </div>`;
             }).join('');
+            const selectAll = document.getElementById('historySelectAll');
+            if (selectAll) selectAll.checked = pageRecords.length > 0 && pageRecords.every(item => historySelectedRowIds.has(Number(item.rowId)));
+            updateBulkBar();
         }
 
         function setHistoryPlatform(platformKey, button) {
             historyPlatformFilter = platformKey;
             document.querySelectorAll('.history-chip[data-platform]').forEach(el => el.classList.remove('active'));
+            if (button) button.classList.add('active');
+            applyHistoryFilters();
+        }
+
+        function setHistoryRisk(riskKey, button) {
+            historyRiskFilter = riskKey;
+            document.querySelectorAll('.history-risk-chip[data-risk]').forEach(el => el.classList.remove('active'));
             if (button) button.classList.add('active');
             applyHistoryFilters();
         }
@@ -1069,6 +1289,24 @@
             if (historyTop) historyTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        function isWithinHistoryDateRange(item) {
+            const from = document.getElementById('historyDateFrom')?.value;
+            const to = document.getElementById('historyDateTo')?.value;
+            if (!from && !to) return true;
+            const date = parseRecordDate(item);
+            if (!date) return false;
+            const ts = date.getTime();
+            if (from && ts < new Date(from + 'T00:00:00').getTime()) return false;
+            if (to && ts > new Date(to + 'T23:59:59').getTime()) return false;
+            return true;
+        }
+
+        function recordMatchesRisk(item) {
+            if (historyRiskFilter === 'all') return true;
+            if (historyRiskFilter === 'quality') return getDataQuality(item).key !== 'good';
+            return !!getRiskFlags(item)[historyRiskFilter];
+        }
+
         function applyHistoryFilters(resetPage = true) {
             const query = safeText(document.getElementById('searchInput')?.value).trim().toLowerCase();
             const shop = safeText(document.getElementById('historyShopFilter')?.value || 'all');
@@ -1080,12 +1318,15 @@
                 if (historyPlatformFilter !== 'all' && getPlatformKey(item.platform) !== historyPlatformFilter) return false;
                 if (shop !== 'all' && getShopGroup(item) !== shop) return false;
                 if (statusFilter !== 'all' && getHistoryStatus(item).key !== statusFilter) return false;
+                if (!recordMatchesRisk(item)) return false;
+                if (!isWithinHistoryDateRange(item)) return false;
                 return true;
             });
 
             if (sort === 'oldest') filtered = filtered.slice().reverse();
             else if (sort === 'platform') filtered = filtered.slice().sort((a,b) => safeText(a.platform).localeCompare(safeText(b.platform), 'th'));
             else if (sort === 'product') filtered = filtered.slice().sort((a,b) => getProductDisplay(a).localeCompare(getProductDisplay(b), 'th'));
+            else if (sort === 'age') filtered = filtered.slice().sort((a,b) => (getCaseAge(b).days || 0) - (getCaseAge(a).days || 0));
 
             if (resetPage) historyCurrentPage = 1;
             renderList(filtered);
@@ -1095,28 +1336,140 @@
             return globalRecords.find(item => Number(item.rowId) === Number(rowId));
         }
 
-        function toggleCheckStatusByRowId(rowId, checkboxEle, event) {
+        function toggleBulkSelectionByRowId(rowId, checkboxEle, event) {
             event.stopPropagation();
-            const item = getRecordByRowId(rowId);
-            if (!item) return;
+            if (checkboxEle.checked) historySelectedRowIds.add(Number(rowId));
+            else historySelectedRowIds.delete(Number(rowId));
+            updateBulkBar();
+        }
 
-            const isChecked = checkboxEle.checked;
-            item.isChecked = isChecked;
-            const listItem = document.getElementById('listItem-' + rowId);
-            if (listItem) listItem.classList.toggle('checked-item', isChecked);
+        function toggleSelectAllVisible(checked) {
+            historyVisiblePageRecords.forEach(item => {
+                const rowId = Number(item.rowId);
+                if (checked) historySelectedRowIds.add(rowId); else historySelectedRowIds.delete(rowId);
+            });
+            renderList(historyFilteredRecords);
+        }
 
+        function clearBulkSelection() {
+            historySelectedRowIds.clear();
+            const selectAll = document.getElementById('historySelectAll');
+            if (selectAll) selectAll.checked = false;
+            renderList(historyFilteredRecords);
+        }
+
+        function updateBulkBar() {
+            const bar = document.getElementById('historyBulkBar');
+            const count = document.getElementById('historyBulkCount');
+            if (!bar || !count) return;
+            count.innerText = 'เลือก ' + historySelectedRowIds.size + ' รายการ';
+            bar.classList.toggle('show', historySelectedRowIds.size > 0);
+        }
+
+        async function runBulkUpdate(extraPayload) {
+            const rowIds = Array.from(historySelectedRowIds);
+            if (!rowIds.length) return;
+            const response = await fetch(WEB_APP_URL, { method:'POST', body:JSON.stringify({ action:'bulkUpdateRecords', rowIds, ...extraPayload }) });
+            const result = await response.json();
+            if (result.status !== 'success') throw new Error(result.message || 'อัปเดตไม่สำเร็จ');
+            rowIds.forEach(rowId => {
+                const item = getRecordByRowId(rowId);
+                if (!item) return;
+                if (typeof extraPayload.isChecked === 'boolean') item.isChecked = extraPayload.isChecked;
+                if (extraPayload.finalCondition) item.finalCondition = extraPayload.finalCondition;
+                if (extraPayload.appendNote) item.notes = (safeText(item.notes).trim() ? safeText(item.notes).trim() + '\n' : '') + extraPayload.appendNote;
+            });
+            historySelectedRowIds.clear();
             updateHistorySummary(globalRecords);
             applyHistoryFilters(false);
-
-            fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "toggleCheck", rowId: item.rowId, isChecked })
-            }).catch(error => console.error("toggleCheck failed", error));
         }
 
-        function filterRecords() {
+        async function bulkMarkChecked(value) { try { await runBulkUpdate({ isChecked:value }); } catch (e) { alert('❌ ' + e.message); } }
+        async function bulkApplyStatus() {
+            const status = document.getElementById('historyBulkStatus')?.value;
+            if (!status) return alert('กรุณาเลือกสถานะ');
+            try { await runBulkUpdate({ finalCondition:status }); document.getElementById('historyBulkStatus').value = ''; } catch (e) { alert('❌ ' + e.message); }
+        }
+        async function bulkAppendNote() {
+            const note = prompt('เพิ่มหมายเหตุให้รายการที่เลือก');
+            if (!note || !note.trim()) return;
+            try { await runBulkUpdate({ appendNote:note.trim() }); } catch (e) { alert('❌ ' + e.message); }
+        }
+
+        function formatDateInput(date) {
+            return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+        }
+        function setQuickDateRange(days) {
+            const end = new Date(); const start = new Date(); start.setDate(end.getDate() - Math.max(0, days - 1));
+            document.getElementById('historyDateFrom').value = formatDateInput(start);
+            document.getElementById('historyDateTo').value = formatDateInput(end);
             applyHistoryFilters();
         }
+
+        function resetHistoryFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('historyShopFilter').value = 'all';
+            document.getElementById('historyStatusFilter').value = 'all';
+            document.getElementById('historyDateFrom').value = '';
+            document.getElementById('historyDateTo').value = '';
+            historyPlatformFilter = 'all'; historyRiskFilter = 'all';
+            document.querySelectorAll('.history-chip[data-platform]').forEach(el => el.classList.toggle('active', el.dataset.platform === 'all'));
+            document.querySelectorAll('.history-risk-chip[data-risk]').forEach(el => el.classList.toggle('active', el.dataset.risk === 'all'));
+        }
+
+        function getCurrentViewState() {
+            return { query:document.getElementById('searchInput').value, shop:document.getElementById('historyShopFilter').value, status:document.getElementById('historyStatusFilter').value, sort:document.getElementById('historySort').value, from:document.getElementById('historyDateFrom').value, to:document.getElementById('historyDateTo').value, platform:historyPlatformFilter, risk:historyRiskFilter };
+        }
+
+        function populateSavedViews() {
+            const select = document.getElementById('historySavedView'); if (!select) return;
+            Array.from(select.querySelectorAll('option[data-custom="1"]')).forEach(o => o.remove());
+            let views = {}; try { views = JSON.parse(localStorage.getItem('returnflowSavedViews') || '{}'); } catch (_) {}
+            Object.keys(views).sort().forEach(name => { const o=document.createElement('option'); o.value='custom:'+name; o.dataset.custom='1'; o.textContent='★ '+name; select.appendChild(o); });
+        }
+        function saveCurrentView() {
+            const name = prompt('ตั้งชื่อ Saved View'); if (!name || !name.trim()) return;
+            let views={}; try { views=JSON.parse(localStorage.getItem('returnflowSavedViews')||'{}'); } catch (_) {}
+            views[name.trim()] = getCurrentViewState(); localStorage.setItem('returnflowSavedViews', JSON.stringify(views)); populateSavedViews();
+        }
+        function applySavedView(value) {
+            if (!value) return;
+            if (value.startsWith('custom:')) { let views={}; try { views=JSON.parse(localStorage.getItem('returnflowSavedViews')||'{}'); } catch (_) {} return applyViewState(views[value.slice(7)]); }
+            const today = formatDateInput(new Date());
+            const presets = { pendingToday:{status:'pending',from:today,to:today}, risk:{status:'issue'}, sku:{risk:'sku'}, tiktokBatteryman:{platform:'tiktok',shop:'Batteryman'}, ready:{status:'ready'} };
+            applyViewState(presets[value] || {});
+        }
+        function applyViewState(state) {
+            resetHistoryFilters();
+            document.getElementById('searchInput').value = state.query || '';
+            if (state.shop && Array.from(document.getElementById('historyShopFilter').options).some(o=>o.value===state.shop)) document.getElementById('historyShopFilter').value = state.shop;
+            document.getElementById('historyStatusFilter').value = state.status || 'all';
+            document.getElementById('historySort').value = state.sort || 'latest';
+            document.getElementById('historyDateFrom').value = state.from || ''; document.getElementById('historyDateTo').value = state.to || '';
+            historyPlatformFilter = state.platform || 'all'; historyRiskFilter = state.risk || 'all';
+            document.querySelectorAll('.history-chip[data-platform]').forEach(el=>el.classList.toggle('active',el.dataset.platform===historyPlatformFilter));
+            document.querySelectorAll('.history-risk-chip[data-risk]').forEach(el=>el.classList.toggle('active',el.dataset.risk===historyRiskFilter));
+            applyHistoryFilters();
+        }
+
+        function historyExportRows() {
+            return historyFilteredRecords.map(item => ({
+                'วันที่':item.date, 'อายุเคส':getCaseAge(item).label, 'แพลตฟอร์ม':item.platform, 'ร้าน':getShopGroup(item),
+                'เลขคืน':item.tracking, 'เลขออเดอร์':item.orderId, 'สินค้า':getProductDisplay(item), 'Expected':getExpectedDisplay(item), 'Received':getReceivedDisplay(item),
+                'จำนวนที่ควรได้':item.expectedQty, 'จำนวนที่ได้รับ':item.receivedQty, 'อุปกรณ์เสริม':item.accessories, 'สถานะ':item.finalCondition, 'หมายเหตุ':item.notes,
+                'Data Quality':getDataQuality(item).label, 'ตรวจแล้ว':item.isChecked ? 'ใช่' : 'ไม่'
+            }));
+        }
+        function exportHistory(type) {
+            const rows = historyExportRows(); if (!rows.length) return alert('ไม่มีข้อมูลสำหรับ Export');
+            const stamp = formatDateInput(new Date());
+            if (type === 'xlsx' && window.XLSX) { const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'ReturnFlow'); XLSX.writeFile(wb,'ReturnFlow-'+stamp+'.xlsx'); return; }
+            const headers=Object.keys(rows[0]); const esc=v=>'"'+safeText(v).replace(/"/g,'""')+'"';
+            const csv=[headers.map(esc).join(',')].concat(rows.map(row=>headers.map(h=>esc(row[h])).join(','))).join('\n');
+            const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ReturnFlow-'+stamp+'.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+        }
+
+        function filterRecords() { applyHistoryFilters(); }
 
         const stepTitles = ["ถ่ายรูปกล่องพัสดุ", "ตรวจสอบเลขคืนสินค้า", "ถ่ายวิดีโอเปิดกล่อง", "ถ่ายรูปสินค้าภายใน", "ประเมินสภาพสินค้า"];
 
@@ -1232,7 +1585,14 @@
             if (data.orderId) document.getElementById('orderId').value = data.orderId;
             if (data.shopName) document.getElementById('shopName').value = data.shopName;
             
-            if (data.productDetails) document.getElementById('productDetails').value = data.productDetails;
+            if (data.productDetails) {
+                document.getElementById('productDetails').value = data.productDetails;
+                const expectedField = document.getElementById('expectedSku');
+                if (expectedField && !expectedField.value) expectedField.value = data.productDetails;
+                const qtyMatch = String(data.productDetails).match(/(?:จำนวน\s*:\s*|=\s*)(\d+)/i);
+                const expectedQtyField = document.getElementById('expectedQty');
+                if (qtyMatch && expectedQtyField && !expectedQtyField.value) expectedQtyField.value = qtyMatch[1];
+            }
             
             if (data.returnType && data.returnType !== "รอตรวจสอบ") {
                 selectReturnType(data.returnType);
@@ -1480,7 +1840,12 @@
                 finalCondition: document.getElementById('finalCondition').value,
                 notes: document.getElementById('notes').value,
                 shopName: document.getElementById('shopName').value,
-                productDetails: document.getElementById('productDetails').value 
+                productDetails: document.getElementById('productDetails').value,
+                expectedSku: document.getElementById('expectedSku').value,
+                receivedSku: document.getElementById('receivedSku').value,
+                expectedQty: document.getElementById('expectedQty').value,
+                receivedQty: document.getElementById('receivedQty').value,
+                accessories: document.getElementById('accessories').value
             };
 
             try {
@@ -1569,6 +1934,11 @@
             document.getElementById('detailShop').innerText = safeText(item.shopName || item.platform).trim() || "-";
             document.getElementById('detailProductDetails').innerText = getProductDisplay(item);
             document.getElementById('detailDate').innerText = safeText(item.date).trim() || "-";
+            document.getElementById('detailExpectedSku').innerText = getExpectedDisplay(item);
+            document.getElementById('detailReceivedSku').innerText = getReceivedDisplay(item);
+            document.getElementById('detailExpectedQty').innerText = 'จำนวน: ' + (safeText(item.expectedQty).trim() || '-');
+            document.getElementById('detailReceivedQty').innerText = 'จำนวน: ' + (safeText(item.receivedQty).trim() || '-');
+            document.getElementById('detailAccessories').innerText = safeText(item.accessories).trim() || 'ยังไม่ได้ตรวจ';
             document.getElementById('detailNotes').innerText = getReasonDisplay(item);
 
             new bootstrap.Modal(document.getElementById('detailModal')).show();
